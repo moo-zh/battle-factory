@@ -66,5 +66,52 @@ inline void TryApplyBurn(BattleContext& ctx, uint8_t chance) {
     }
 }
 
+/**
+ * @brief Attempt to inflict Paralysis status on defender
+ *
+ * CONTRACT:
+ * - Inputs: ctx.defender, chance (0-100)
+ * - Outputs: Sets ctx.defender->status1 to PARALYSIS if successful
+ * - Does: Check immunities, roll RNG, apply paralysis
+ * - Does NOT: Deal damage, check accuracy (already done)
+ *
+ * IMMUNITIES CHECKED (Phase 1):
+ * - Already has a status (status1 != 0)
+ * - Target fainted (current_hp == 0)
+ *
+ * NOT YET IMPLEMENTED (future passes):
+ * - Ground type immunity (for Electric-type moves like Thunder Wave)
+ * - Limber ability
+ * - Safeguard field effect
+ * - Substitute (blocks paralysis in Gen III, unlike burn)
+ *
+ * @param ctx Battle context containing attacker, defender, move
+ * @param chance Paralysis chance (0-100, usually 100 for Thunder Wave)
+ */
+inline void TryApplyParalysis(BattleContext& ctx, uint8_t chance) {
+    // Guard: skip if move already failed
+    if (ctx.move_failed)
+        return;
+
+    // Guard: skip if target fainted
+    if (ctx.defender->current_hp == 0)
+        return;
+
+    // Already has a status condition (Sleep, Poison, Burn, etc.)
+    if (ctx.defender->status1 != 0) {
+        return;
+    }
+
+    // TODO (future): Check Ground type immunity for Electric-type moves
+    // TODO (future): Check Limber ability
+    // TODO (future): Check Safeguard on defender's side
+
+    // Roll for paralysis
+    if (random::Random(100) < chance) {
+        ctx.defender->status1 = domain::Status1::PARALYSIS;
+        // TODO (future): Add battle message: "[Pokemon] was paralyzed!"
+    }
+}
+
 }  // namespace commands
 }  // namespace battle

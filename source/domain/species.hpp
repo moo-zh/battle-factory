@@ -20,8 +20,11 @@ enum class Type : uint8_t {
     Normal,
     Fire,
     Water,
+    Electric,
     Grass,
     Poison,
+    Rock,
+    Ground,
     // TODO: Add remaining types as needed
 };
 
@@ -32,6 +35,8 @@ enum class Species : uint8_t {
     None = 0,
     Charmander,
     Bulbasaur,
+    Pikachu,
+    Geodude,
     // TODO: Add more species as we implement more moves
 };
 

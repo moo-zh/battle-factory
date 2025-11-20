@@ -62,5 +62,27 @@ inline void Effect_BurnHit(BattleContext& ctx) {
     commands::CheckFaint(ctx);
 }
 
+/**
+ * @brief Effect: PARALYZE - Status-only paralysis move (e.g., Thunder Wave)
+ *
+ * This effect applies paralysis status without dealing damage.
+ * It:
+ * 1. Checks accuracy
+ * 2. Attempts to apply paralysis (100% chance if it hits)
+ *
+ * No damage is dealt, so there's no damage calculation, damage application,
+ * or faint check. This is the first **status-only** effect.
+ *
+ * Example moves:
+ * - Thunder Wave (0 power, 100 accuracy, Electric type)
+ * - Stun Spore (0 power, 75 accuracy, Grass type)
+ * - Glare (0 power, 75 accuracy, Normal type)
+ */
+inline void Effect_Paralyze(BattleContext& ctx) {
+    commands::AccuracyCheck(ctx);
+    commands::TryApplyParalysis(ctx, 100);  // 100% chance if move hits
+    // No CheckFaint - status-only moves don't deal damage
+}
+
 }  // namespace effects
 }  // namespace battle
