@@ -5,10 +5,72 @@
 
 #pragma once
 
+#include "../../domain/stats.hpp"
 #include "../context.hpp"
 
 namespace battle {
 namespace commands {
+
+/**
+ * @brief Get a stat value with stat stage multiplier applied
+ *
+ * CONTRACT:
+ * - Inputs: Pokemon with base stats and stat_stages
+ * - Outputs: Returns modified stat value
+ * - Does: Apply stage multiplier to base stat
+ *
+ * STAT STAGE MULTIPLIERS:
+ * - If stage >= 0: multiplier = (2 + stage) / 2
+ * - If stage < 0:  multiplier = 2 / (2 - stage)
+ *
+ * Examples:
+ * - Stage -6: 2/8 = 0.25x (25%)
+ * - Stage -1: 2/3 = 0.67x (67%)
+ * - Stage  0: 2/2 = 1.00x (100%, neutral)
+ * - Stage +1: 3/2 = 1.50x (150%)
+ * - Stage +6: 8/2 = 4.00x (400%)
+ *
+ * Based on pokeemerald damage calculation with stat stages
+ *
+ * @param p Pokemon to get stat from
+ * @param stat Which stat to retrieve (STAT_ATK, STAT_DEF, etc.)
+ * @return Modified stat value with stage multiplier applied
+ */
+inline int GetModifiedStat(const state::Pokemon& p, domain::Stat stat) {
+    int base_stat = 0;
+
+    // Get base stat value
+    switch (stat) {
+        case domain::STAT_ATK:
+            base_stat = p.attack;
+            break;
+        case domain::STAT_DEF:
+            base_stat = p.defense;
+            break;
+        case domain::STAT_SPATK:
+            base_stat = p.sp_attack;
+            break;
+        case domain::STAT_SPDEF:
+            base_stat = p.sp_defense;
+            break;
+        case domain::STAT_SPEED:
+            base_stat = p.speed;
+            break;
+        default:
+            return base_stat;  // HP doesn't have stages
+    }
+
+    int8_t stage = p.stat_stages[stat];
+
+    // Apply stage multiplier
+    if (stage >= 0) {
+        // Positive or neutral: (2 + stage) / 2
+        return (base_stat * (2 + stage)) / 2;
+    } else {
+        // Negative: 2 / (2 - stage)
+        return (base_stat * 2) / (2 - stage);
+    }
+}
 
 /**
  * @brief Calculate damage using simplified Gen III formula
@@ -16,19 +78,23 @@ namespace commands {
  * CONTRACT:
  * - Inputs: ctx.attacker stats, ctx.defender stats, ctx.move->power
  * - Outputs: Sets ctx.damage_dealt
- * - Does: Calculate damage (simplified for Pass 1)
+ * - Does: Calculate damage with stat stages applied
  * - Does NOT: Apply the damage (that's ApplyDamage's job)
  *
- * SIMPLIFIED FORMULA (Pass 1):
- * - No stat stages
+ * FORMULA (with stat stages):
+ * - Stat stages applied to Attack and Defense
  * - No critical hits
  * - No type effectiveness
  * - No STAB
  * - No weather/ability/item modifiers
  * - No random variance
  *
- * Formula: damage = (22 * power * attack / defense) / 50 + 2
+ * Formula: damage = (22 * power * modified_attack / modified_defense) / 50 + 2
  * (This is the Gen III formula for level 50 with all modifiers = 1)
+ *
+ * Stat stages range from -6 to +6:
+ * - If stage >= 0: multiplier = (2 + stage) / 2
+ * - If stage < 0:  multiplier = 2 / (2 - stage)
  */
 inline void CalculateDamage(BattleContext& ctx) {
     if (ctx.move_failed)
@@ -39,8 +105,9 @@ inline void CalculateDamage(BattleContext& ctx) {
 
     // For now, we assume all moves are physical (Normal type is physical in Gen III)
     // TODO: Add physical/special split based on type when we add more move types
-    int attack = ctx.attacker->attack;
-    int defense = ctx.defender->defense;
+    // Get modified stats with stat stages applied
+    int attack = GetModifiedStat(*ctx.attacker, domain::STAT_ATK);
+    int defense = GetModifiedStat(*ctx.defender, domain::STAT_DEF);
 
     // Simplified Gen III damage formula (level 50)
     // damage = (((2 * Level / 5 + 2) * Power * A / D) / 50) + 2

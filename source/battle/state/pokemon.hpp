@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include "../../domain/species.hpp"
+#include "../../domain/stats.hpp"
 
 namespace battle {
 namespace state {
@@ -22,6 +23,7 @@ struct Pokemon {
     domain::Species species;
     domain::Type type1;
     domain::Type type2;
+    uint8_t level;
 
     // Base stats (not modified by stages)
     uint8_t attack;
@@ -38,7 +40,12 @@ struct Pokemon {
     // Status conditions
     uint8_t status1;  // Primary status: Sleep, Poison, Burn, Freeze, Paralysis
 
-    // TODO: Add stat stages, volatile status (status2), abilities later
+    // Stat stages (-6 to +6, with 0 being neutral)
+    // Stages apply multipliers to stats during damage calculation
+    // Order: ATK, DEF, SPEED, SPATK, SPDEF, ACC, EVASION
+    int8_t stat_stages[domain::NUM_BATTLE_STATS];
+
+    // TODO: Add volatile status (status2), abilities later
 };
 
 }  // namespace state

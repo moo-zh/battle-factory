@@ -22,13 +22,15 @@
 /**
  * @brief Create a Pokemon for testing with specified stats
  */
-battle::state::Pokemon CreateTestPokemon(domain::Species species, domain::Type type1,
-                                         domain::Type type2, uint16_t hp, uint8_t atk, uint8_t def,
-                                         uint8_t spa, uint8_t spd, uint8_t spe) {
+static battle::state::Pokemon CreateTestPokemon(domain::Species species, domain::Type type1,
+                                                domain::Type type2, uint16_t hp, uint8_t atk,
+                                                uint8_t def, uint8_t spa, uint8_t spd,
+                                                uint8_t spe) {
     battle::state::Pokemon p;
     p.species = species;
     p.type1 = type1;
     p.type2 = type2;
+    p.level = 5;
     p.attack = atk;
     p.defense = def;
     p.sp_attack = spa;
@@ -38,6 +40,12 @@ battle::state::Pokemon CreateTestPokemon(domain::Species species, domain::Type t
     p.current_hp = hp;
     p.is_fainted = false;
     p.status1 = 0;  // No status
+
+    // Initialize stat stages to 0 (neutral)
+    for (int i = 0; i < 8; i++) {
+        p.stat_stages[i] = 0;
+    }
+
     return p;
 }
 
@@ -45,7 +53,7 @@ battle::state::Pokemon CreateTestPokemon(domain::Species species, domain::Type t
  * @brief Create Charmander with Gen III base stats
  * Base stats: 39 HP, 52 Atk, 43 Def, 60 SpA, 50 SpD, 65 Spe
  */
-battle::state::Pokemon CreateCharmander() {
+static battle::state::Pokemon CreateCharmander() {
     return CreateTestPokemon(domain::Species::Charmander, domain::Type::Fire, domain::Type::None,
                              39, 52, 43, 60, 50, 65);
 }
@@ -54,7 +62,7 @@ battle::state::Pokemon CreateCharmander() {
  * @brief Create Bulbasaur with Gen III base stats
  * Base stats: 45 HP, 49 Atk, 49 Def, 65 SpA, 65 SpD, 45 Spe
  */
-battle::state::Pokemon CreateBulbasaur() {
+static battle::state::Pokemon CreateBulbasaur() {
     return CreateTestPokemon(domain::Species::Bulbasaur, domain::Type::Grass, domain::Type::Poison,
                              45, 49, 49, 65, 65, 45);
 }
@@ -63,7 +71,7 @@ battle::state::Pokemon CreateBulbasaur() {
  * @brief Create the Ember move data
  * Gen III: 40 power, 100 accuracy, Fire type, 10% burn chance
  */
-domain::MoveData CreateEmber() {
+static domain::MoveData CreateEmber() {
     domain::MoveData ember;
     ember.move = domain::Move::Ember;
     ember.type = domain::Type::Fire;

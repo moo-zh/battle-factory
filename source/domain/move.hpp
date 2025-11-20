@@ -21,6 +21,7 @@ enum class Move : uint8_t {
     Tackle,
     Ember,
     ThunderWave,
+    Growl,
     // TODO: Add more moves as we implement them
 };
 

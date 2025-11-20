@@ -5,9 +5,11 @@
 
 #pragma once
 
+#include "../../domain/stats.hpp"
 #include "../commands/accuracy.hpp"
 #include "../commands/damage.hpp"
 #include "../commands/faint.hpp"
+#include "../commands/stat_modify.hpp"
 #include "../commands/status.hpp"
 #include "../context.hpp"
 
@@ -81,6 +83,35 @@ inline void Effect_BurnHit(BattleContext& ctx) {
 inline void Effect_Paralyze(BattleContext& ctx) {
     commands::AccuracyCheck(ctx);
     commands::TryApplyParalysis(ctx, 100);  // 100% chance if move hits
+    // No CheckFaint - status-only moves don't deal damage
+}
+
+/**
+ * @brief Effect: ATTACK_DOWN - Lowers target's Attack by 1 stage (e.g., Growl)
+ *
+ * This effect lowers the target's Attack stat by 1 stage without dealing damage.
+ * It:
+ * 1. Checks accuracy
+ * 2. Lowers Attack stat stage by 1
+ *
+ * This is the first **stat modification** effect, introducing the stat stage system.
+ * Stat stages range from -6 to +6, and apply multipliers during damage calculation:
+ * - If stage >= 0: multiplier = (2 + stage) / 2
+ * - If stage < 0:  multiplier = 2 / (2 - stage)
+ *
+ * No damage is dealt, so there's no damage calculation, damage application,
+ * or faint check.
+ *
+ * Example moves:
+ * - Growl (0 power, 100 accuracy, Normal type)
+ * - Tail Whip (0 power, 100 accuracy, Normal type) - lowers Defense instead
+ * - Leer (0 power, 100 accuracy, Normal type) - lowers Defense instead
+ *
+ * Based on pokeemerald: data/battle_scripts_1.s:516-554
+ */
+inline void Effect_AttackDown(BattleContext& ctx) {
+    commands::AccuracyCheck(ctx);
+    commands::ModifyStatStage(ctx, domain::STAT_ATK, -1);  // Lower Attack by 1 stage
     // No CheckFaint - status-only moves don't deal damage
 }
 
