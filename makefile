@@ -2,7 +2,7 @@
 # Makefile Options
 # ----------------------------
 
-NAME = PokeBatl
+NAME = POKEMON
 ICON = icon.png
 DESCRIPTION = "Pokemon Battle Factory"
 
@@ -20,3 +20,16 @@ ARCHIVED = YES
 # ----------------------------
 
 include $(shell cedev-config --makefile)
+
+# ----------------------------
+# Custom Build Targets
+# ----------------------------
+
+.PHONY: utest
+
+# Unit test target - build test harness from test/ directory with debug flags
+# Structure: test/main.cpp, test/unit/
+utest:
+	@$(MAKE) debug NAME=UTEST SRCDIR=test/ DESCRIPTION="Test Harness" \
+		CXXFLAGS="$(CXXFLAGS) -I$(SRCDIR)" \
+		EXTRA_CXX_SOURCES="$(wildcard $(SRCDIR)**/*.cpp)"
