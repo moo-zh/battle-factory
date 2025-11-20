@@ -35,7 +35,10 @@ struct Pokemon {
     uint16_t current_hp;
     bool is_fainted;
 
-    // TODO: Add stat stages, status conditions, volatile status later
+    // Status conditions
+    uint8_t status1;  // Primary status: Sleep, Poison, Burn, Freeze, Paralysis
+
+    // TODO: Add stat stages, volatile status (status2), abilities later
 };
 
 }  // namespace state

@@ -169,6 +169,55 @@ constexpr const char* WHITE = "\x1b[37m";    ///< White text
         }                                                                                     \
     } while (0)
 
+/**
+ * @brief Assert a condition for all iterations in a batch test.
+ * @param condition The condition to evaluate each iteration.
+ * @param message Description of what is being tested.
+ * @param iterations Total number of iterations.
+ *
+ * This macro is designed for batch/fuzz tests where you run the same assertion
+ * many times (e.g., 100 trials). Instead of printing 100 identical lines, it
+ * tracks successes and failures and prints a single summary line.
+ *
+ * The batch counts as ONE assertion in the total stats, not N assertions.
+ *
+ * Usage:
+ * @code
+ * for (int i = 0; i < 100; i++) {
+ *     auto result = RunTest();
+ *     TEST_ASSERT_BATCH(result.status == 0, "Test should pass", 100);
+ * }
+ * @endcode
+ */
+#define TEST_ASSERT_BATCH(condition, message, iterations)                                \
+    do {                                                                                 \
+        static int _batch_total = 0;                                                     \
+        static int _batch_passed = 0;                                                    \
+        static int _batch_failed = 0;                                                    \
+        if (condition) {                                                                 \
+            _batch_passed++;                                                             \
+        } else {                                                                         \
+            _batch_failed++;                                                             \
+        }                                                                                \
+        _batch_total++;                                                                  \
+        if (_batch_total == (iterations)) {                                              \
+            test::g_stats.total++;                                                       \
+            if (_batch_failed == 0) {                                                    \
+                test::g_stats.passed++;                                                  \
+                dbg_printf("  %s[PASS]%s %s (%d/%d trials)\n", test::Color::GREEN,       \
+                           test::Color::RESET, message, _batch_passed, iterations);      \
+            } else {                                                                     \
+                test::g_stats.failed++;                                                  \
+                dbg_printf("  %s[FAIL]%s %s (%d/%d passed, %d failed) (%s:%d)\n",        \
+                           test::Color::RED, test::Color::RESET, message, _batch_passed, \
+                           iterations, _batch_failed, __FILE__, __LINE__);               \
+            }                                                                            \
+            _batch_total = 0;                                                            \
+            _batch_passed = 0;                                                           \
+            _batch_failed = 0;                                                           \
+        }                                                                                \
+    } while (0)
+
 /** @} */  // end of assertions group
 
 /**

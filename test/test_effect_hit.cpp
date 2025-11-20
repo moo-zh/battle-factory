@@ -37,6 +37,7 @@ battle::state::Pokemon CreateTestPokemon(domain::Species species, domain::Type t
     p.max_hp = hp;
     p.current_hp = hp;
     p.is_fainted = false;
+    p.status1 = 0;  // No status
     return p;
 }
 
@@ -79,6 +80,7 @@ domain::MoveData CreateTackle() {
     tackle.power = 35;
     tackle.accuracy = 95;
     tackle.pp = 35;
+    tackle.effect_chance = 0;  // No secondary effect
     return tackle;
 }
 

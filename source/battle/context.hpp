@@ -9,8 +9,9 @@
 #pragma once
 
 #include <stdint.h>
-#include "state/pokemon.hpp"
+
 #include "../domain/move.hpp"
+#include "state/pokemon.hpp"
 
 namespace battle {
 

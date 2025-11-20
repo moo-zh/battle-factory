@@ -19,6 +19,7 @@ namespace domain {
 enum class Move : uint8_t {
     None = 0,
     Tackle,
+    Ember,
     // TODO: Add more moves as we implement them
 };
 
@@ -31,6 +32,7 @@ struct MoveData {
     uint8_t power;
     uint8_t accuracy;
     uint8_t pp;
+    uint8_t effect_chance;  // Secondary effect chance (e.g., 10 for 10% burn)
 };
 
 }  // namespace domain
