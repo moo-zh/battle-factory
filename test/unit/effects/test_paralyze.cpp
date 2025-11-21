@@ -118,7 +118,7 @@ battle::BattleContext SetupContext(battle::state::Pokemon* attacker,
 // BASIC FUNCTIONALITY TESTS
 // ============================================================================
 
-TEST_CASE(effect_paralyze_applies_paralysis) {
+TEST_CASE(Effect_Paralyze_AppliesParalysis) {
     // Setup: Pikachu uses Thunder Wave on Bulbasaur
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();
@@ -133,7 +133,7 @@ TEST_CASE(effect_paralyze_applies_paralysis) {
     TEST_ASSERT_EQ(defender.status1, domain::Status1::PARALYSIS, "Defender should be paralyzed");
 }
 
-TEST_CASE(effect_paralyze_does_not_deal_damage) {
+TEST_CASE(Effect_Paralyze_DoesNotDealDamage) {
     // Setup: Status-only moves deal no damage
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();
@@ -151,7 +151,7 @@ TEST_CASE(effect_paralyze_does_not_deal_damage) {
     TEST_ASSERT_EQ(ctx.damage_dealt, 0, "No damage should be calculated");
 }
 
-TEST_CASE(effect_paralyze_does_not_set_faint_flag) {
+TEST_CASE(Effect_Paralyze_DoesNotSetFaintFlag) {
     // Setup: Status moves cannot faint Pokemon
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();
@@ -171,7 +171,7 @@ TEST_CASE(effect_paralyze_does_not_set_faint_flag) {
 // IMMUNITY TESTS
 // ============================================================================
 
-TEST_CASE(effect_paralyze_already_statused_fails) {
+TEST_CASE(Effect_Paralyze_AlreadyStatusedFails) {
     // Setup: Pokemon with existing status cannot be paralyzed
     // Run 100 trials to ensure it never succeeds
     for (int i = 0; i < 100; i++) {
@@ -188,7 +188,7 @@ TEST_CASE(effect_paralyze_already_statused_fails) {
     }
 }
 
-TEST_CASE(effect_paralyze_already_paralyzed_fails) {
+TEST_CASE(Effect_Paralyze_AlreadyParalyzedFails) {
     // Setup: Pokemon already paralyzed stays paralyzed
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();
@@ -209,7 +209,7 @@ TEST_CASE(effect_paralyze_already_paralyzed_fails) {
 // EDGE CASE TESTS
 // ============================================================================
 
-TEST_CASE(effect_paralyze_does_not_modify_attacker) {
+TEST_CASE(Effect_Paralyze_DoesNotModifyAttacker) {
     // Setup: Verify attacker is not affected by using Thunder Wave
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();
@@ -229,7 +229,7 @@ TEST_CASE(effect_paralyze_does_not_modify_attacker) {
     TEST_ASSERT(!attacker.is_fainted, "Attacker should not faint");
 }
 
-TEST_CASE(effect_paralyze_healthy_pokemon) {
+TEST_CASE(Effect_Paralyze_HealthyPokemon) {
     // Setup: Verify paralysis works on full HP Pokemon
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();
@@ -247,7 +247,7 @@ TEST_CASE(effect_paralyze_healthy_pokemon) {
     TEST_ASSERT_EQ(defender.current_hp, defender.max_hp, "HP should remain full");
 }
 
-TEST_CASE(effect_paralyze_low_hp_pokemon) {
+TEST_CASE(Effect_Paralyze_LowHpPokemon) {
     // Setup: Verify paralysis works on low HP Pokemon (doesn't KO them)
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();
@@ -270,7 +270,7 @@ TEST_CASE(effect_paralyze_low_hp_pokemon) {
 // ============================================================================
 
 /*
-TEST_CASE(effect_paralyze_ground_type_immune) {
+TEST_CASE(Effect_Paralyze_GroundTypeImmune) {
     // TODO: Enable when type effectiveness is implemented
     // Ground types are immune to Electric-type Thunder Wave
     auto attacker = CreatePikachu();
@@ -283,7 +283,7 @@ TEST_CASE(effect_paralyze_ground_type_immune) {
     TEST_ASSERT_EQ(defender.status1, 0, "Ground type should be immune to Thunder Wave");
 }
 
-TEST_CASE(effect_paralyze_limber_immune) {
+TEST_CASE(Effect_Paralyze_LimberImmune) {
     // TODO: Enable when abilities are implemented
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();
@@ -296,7 +296,7 @@ TEST_CASE(effect_paralyze_limber_immune) {
     TEST_ASSERT_EQ(defender.status1, 0, "Limber ability prevents paralysis");
 }
 
-TEST_CASE(effect_paralyze_safeguard_blocks) {
+TEST_CASE(Effect_Paralyze_SafeguardBlocks) {
     // TODO: Enable when field effects are implemented
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();
@@ -309,7 +309,7 @@ TEST_CASE(effect_paralyze_safeguard_blocks) {
     TEST_ASSERT_EQ(defender.status1, 0, "Safeguard should block paralysis");
 }
 
-TEST_CASE(effect_paralyze_substitute_blocks) {
+TEST_CASE(Effect_Paralyze_SubstituteBlocks) {
     // TODO: Enable when Substitute is implemented
     // Unlike burn (Ember), paralysis is blocked by Substitute in Gen III
     auto attacker = CreatePikachu();
@@ -324,7 +324,7 @@ TEST_CASE(effect_paralyze_substitute_blocks) {
     TEST_ASSERT_EQ(defender.status1, 0, "Substitute blocks paralysis");
 }
 
-TEST_CASE(effect_paralyze_miss_does_not_paralyze) {
+TEST_CASE(Effect_Paralyze_MissDoesNotParalyze) {
     // TODO: Enable when accuracy checks are fully implemented
     auto attacker = CreatePikachu();
     auto defender = CreateBulbasaur();

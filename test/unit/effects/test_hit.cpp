@@ -114,7 +114,7 @@ battle::BattleContext SetupContext(battle::state::Pokemon* attacker,
 // TESTS
 // ============================================================================
 
-TEST_CASE(effect_hit_basic_damage) {
+TEST_CASE(Effect_Hit_BasicDamage) {
     // Setup: Charmander uses Tackle on Bulbasaur
     auto attacker = CreateCharmander();
     auto defender = CreateBulbasaur();
@@ -136,7 +136,7 @@ TEST_CASE(effect_hit_basic_damage) {
     TEST_ASSERT(ctx.damage_dealt < 30, "Damage should be reasonable (< 30)");
 }
 
-TEST_CASE(effect_hit_damage_scales_with_attack) {
+TEST_CASE(Effect_Hit_DamageScalesWithAttack) {
     // Setup: Two attackers with different Attack stats
     auto weak_attacker = CreateTestPokemon(domain::Species::Charmander, domain::Type::Fire,
                                            domain::Type::None, 100, 30, 40, 50, 50, 50);
@@ -160,7 +160,7 @@ TEST_CASE(effect_hit_damage_scales_with_attack) {
     TEST_ASSERT(ctx2.damage_dealt > ctx1.damage_dealt, "Higher Attack should deal more damage");
 }
 
-TEST_CASE(effect_hit_damage_scales_with_defense) {
+TEST_CASE(Effect_Hit_DamageScalesWithDefense) {
     // Setup: Two defenders with different Defense stats
     auto attacker1 = CreateCharmander();
     auto attacker2 = CreateCharmander();
@@ -185,7 +185,7 @@ TEST_CASE(effect_hit_damage_scales_with_defense) {
     TEST_ASSERT(ctx1.damage_dealt > ctx2.damage_dealt, "Higher Defense should reduce damage");
 }
 
-TEST_CASE(effect_hit_can_ko) {
+TEST_CASE(Effect_Hit_CanKo) {
     // Setup: Weak defender with 1 HP
     auto attacker = CreateCharmander();
     auto weak_defender = CreateTestPokemon(domain::Species::Bulbasaur, domain::Type::Grass,
@@ -205,7 +205,7 @@ TEST_CASE(effect_hit_can_ko) {
     TEST_ASSERT(weak_defender.is_fainted, "Faint flag should be set");
 }
 
-TEST_CASE(effect_hit_minimum_damage) {
+TEST_CASE(Effect_Hit_MinimumDamage) {
     // Setup: Extremely weak attacker vs. extremely strong defender
     auto weak_attacker = CreateTestPokemon(domain::Species::Charmander, domain::Type::Fire,
                                            domain::Type::None, 100, 5, 50, 50, 50, 50);
@@ -223,7 +223,7 @@ TEST_CASE(effect_hit_minimum_damage) {
     TEST_ASSERT(ctx.damage_dealt >= 1, "Minimum damage should be 1");
 }
 
-TEST_CASE(effect_hit_hp_clamped_at_zero) {
+TEST_CASE(Effect_Hit_HpClampedAtZero) {
     // Setup: Overkill damage (more than current HP)
     auto attacker = CreateTestPokemon(domain::Species::Charmander, domain::Type::Fire,
                                       domain::Type::None, 100, 200, 50, 50, 50, 50);
@@ -242,7 +242,7 @@ TEST_CASE(effect_hit_hp_clamped_at_zero) {
     TEST_ASSERT(defender.is_fainted, "Pokemon should be fainted");
 }
 
-TEST_CASE(effect_hit_does_not_modify_attacker) {
+TEST_CASE(Effect_Hit_DoesNotModifyAttacker) {
     // Setup
     auto attacker = CreateCharmander();
     auto defender = CreateBulbasaur();
@@ -269,44 +269,44 @@ TEST_CASE(effect_hit_does_not_modify_attacker) {
 // add features in subsequent moves
 
 /*
-TEST_CASE(effect_hit_can_miss) {
+TEST_CASE(Effect_Hit_CanMiss) {
     // TODO: Enable when accuracy formula is implemented
     // Test that moves with < 100 accuracy can miss
     // Will need to mock RNG or run many iterations
 }
 
-TEST_CASE(effect_hit_miss_deals_no_damage) {
+TEST_CASE(Effect_Hit_MissDealsNoDamage) {
     // TODO: Enable when accuracy formula is implemented
     // Verify that on miss, no damage is dealt and move_failed is set
 }
 
-TEST_CASE(effect_hit_type_immunity) {
+TEST_CASE(Effect_Hit_TypeImmunity) {
     // TODO: Enable when type effectiveness is implemented
     // Normal vs. Ghost should deal 0 damage
 }
 
-TEST_CASE(effect_hit_super_effective) {
+TEST_CASE(Effect_Hit_SuperEffective) {
     // TODO: Enable when type effectiveness is implemented
     // Fire vs. Grass should deal 2x damage
 }
 
-TEST_CASE(effect_hit_not_very_effective) {
+TEST_CASE(Effect_Hit_NotVeryEffective) {
     // TODO: Enable when type effectiveness is implemented
     // Water vs. Grass should deal 0.5x damage
 }
 
-TEST_CASE(effect_hit_critical_hit) {
+TEST_CASE(Effect_Hit_CriticalHit) {
     // TODO: Enable when critical hits are implemented
     // Verify crits deal 2x damage
     // Verify ctx.critical_hit flag is set
 }
 
-TEST_CASE(effect_hit_stab) {
+TEST_CASE(Effect_Hit_Stab) {
     // TODO: Enable when STAB is implemented
     // Fire-type using Fire move should get 1.5x boost
 }
 
-TEST_CASE(effect_hit_random_variance) {
+TEST_CASE(Effect_Hit_RandomVariance) {
     // TODO: Enable when random variance is added
     // Same attack should produce damage in 85-100% range
 }

@@ -104,7 +104,7 @@ battle::BattleContext SetupContext(battle::state::Pokemon* attacker,
 // BASIC FUNCTIONALITY TESTS
 // ============================================================================
 
-TEST_CASE(effect_burn_hit_deals_damage) {
+TEST_CASE(Effect_BurnHit_DealsDamage) {
     // Setup: Charmander uses Ember on Bulbasaur
     auto attacker = CreateCharmander();
     auto defender = CreateBulbasaur();
@@ -120,7 +120,7 @@ TEST_CASE(effect_burn_hit_deals_damage) {
     TEST_ASSERT(ctx.damage_dealt > 0, "Damage should be calculated");
 }
 
-TEST_CASE(effect_burn_hit_can_apply_burn) {
+TEST_CASE(Effect_BurnHit_CanApplyBurn) {
     // Setup: Test probabilistically by running many trials
     int burns = 0;
     const int trials = 100;
@@ -144,7 +144,7 @@ TEST_CASE(effect_burn_hit_can_apply_burn) {
     TEST_ASSERT(burns <= 20, "Should not burn too often (max 20/100)");
 }
 
-TEST_CASE(effect_burn_hit_damage_and_burn_both_apply) {
+TEST_CASE(Effect_BurnHit_DamageAndBurnBothApply) {
     // Setup: Verify both damage and burn can occur in same attack
     // Run multiple trials to find case where burn applies
     bool found_burn_with_damage = false;
@@ -168,7 +168,7 @@ TEST_CASE(effect_burn_hit_damage_and_burn_both_apply) {
 // BURN IMMUNITY TESTS
 // ============================================================================
 
-TEST_CASE(effect_burn_hit_fire_type_immune_to_burn) {
+TEST_CASE(Effect_BurnHit_FireTypeImmuneToBurn) {
     // Setup: Fire-type defender should be immune to burn
     // Run many trials - Fire type should NEVER burn
     for (int i = 0; i < 100; i++) {
@@ -183,7 +183,7 @@ TEST_CASE(effect_burn_hit_fire_type_immune_to_burn) {
     }
 }
 
-TEST_CASE(effect_burn_hit_already_statused_cant_burn) {
+TEST_CASE(Effect_BurnHit_AlreadyStatusedCantBurn) {
     // Setup: Pokemon with existing status cannot be burned
     // Run many trials - already statused Pokemon should NEVER burn
     for (int i = 0; i < 100; i++) {
@@ -203,7 +203,7 @@ TEST_CASE(effect_burn_hit_already_statused_cant_burn) {
 // EDGE CASE TESTS
 // ============================================================================
 
-TEST_CASE(effect_burn_hit_fainted_target_not_burned) {
+TEST_CASE(Effect_BurnHit_FaintedTargetNotBurned) {
     // Setup: Pokemon that faints from damage should not be burned
     // Run many trials - dead Pokemon should never burn
     for (int i = 0; i < 100; i++) {
@@ -221,7 +221,7 @@ TEST_CASE(effect_burn_hit_fainted_target_not_burned) {
     }
 }
 
-TEST_CASE(effect_burn_hit_does_not_modify_attacker) {
+TEST_CASE(Effect_BurnHit_DoesNotModifyAttacker) {
     // Setup: Verify attacker is not damaged or affected
     auto attacker = CreateCharmander();
     auto defender = CreateBulbasaur();
@@ -239,7 +239,7 @@ TEST_CASE(effect_burn_hit_does_not_modify_attacker) {
     TEST_ASSERT(!attacker.is_fainted, "Attacker should not faint");
 }
 
-TEST_CASE(effect_burn_hit_zero_power_move_still_checks_burn) {
+TEST_CASE(Effect_BurnHit_ZeroPowerMoveStillChecksBurn) {
     // Edge case: If move somehow has 0 power, burn should still be checked
     // This is hypothetical but tests command separation
     int burns = 0;
@@ -266,7 +266,7 @@ TEST_CASE(effect_burn_hit_zero_power_move_still_checks_burn) {
 // ============================================================================
 
 /*
-TEST_CASE(effect_burn_hit_water_veil_immune) {
+TEST_CASE(Effect_BurnHit_WaterVeilImmune) {
     // TODO: Enable when abilities are implemented
     auto attacker = CreateCharmander();
     auto defender = CreateBulbasaur();
@@ -287,12 +287,12 @@ TEST_CASE(effect_burn_hit_water_veil_immune) {
     }
 }
 
-TEST_CASE(effect_burn_hit_safeguard_prevents_burn) {
+TEST_CASE(Effect_BurnHit_SafeguardPreventsBurn) {
     // TODO: Enable when field effects are implemented
     // Safeguard should prevent burn application
 }
 
-TEST_CASE(effect_burn_hit_substitute_allows_burn) {
+TEST_CASE(Effect_BurnHit_SubstituteAllowsBurn) {
     // TODO: Enable when Substitute is implemented
     // Gen III: Substitute blocks damage but NOT secondary status
     auto attacker = CreateCharmander();
@@ -304,7 +304,7 @@ TEST_CASE(effect_burn_hit_substitute_allows_burn) {
     // Damage should hit substitute, but burn can still apply
 }
 
-TEST_CASE(effect_burn_hit_miss_does_not_burn) {
+TEST_CASE(Effect_BurnHit_MissDoesNotBurn) {
     // TODO: Enable when accuracy checks are fully implemented
     // When move misses, no damage and no burn
 }
