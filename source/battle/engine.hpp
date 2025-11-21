@@ -95,6 +95,19 @@ class BattleEngine {
 
    private:
     /**
+     * @brief Determine which player goes first this turn
+     * @param player_action The player's action
+     * @param enemy_action The enemy's action
+     * @return true if player goes first, false if enemy goes first
+     *
+     * Phase 4: Speed-based turn order
+     * - Compares move priorities (all 0 for Phase 4)
+     * - Compares effective speeds (base speed * stat stages)
+     * - Random tiebreaker if speeds equal
+     */
+    bool DetermineTurnOrder(const BattleAction& player_action, const BattleAction& enemy_action);
+
+    /**
      * @brief Execute a single move
      * @param attacker The attacking Pokemon
      * @param defender The defending Pokemon

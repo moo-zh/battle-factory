@@ -152,24 +152,117 @@ void BattleEngine::InitBattle(const state::Pokemon& player_pokemon,
     enemy_ = enemy_pokemon;
 }
 
+/**
+ * @brief Calculate effective speed for turn order
+ * @param pokemon The Pokemon whose speed to calculate
+ * @return Effective speed (base speed * stat stage multiplier)
+ *
+ * Based on pokeemerald's GetWhoStrikesFirst function.
+ * Formula: speed * (2 + stage) / 2  if stage >= 0
+ *          speed * 2 / (2 - stage)  if stage < 0
+ */
+static uint16_t CalculateEffectiveSpeed(const state::Pokemon& pokemon) {
+    uint16_t speed = pokemon.speed;
+    int8_t stage = pokemon.stat_stages[domain::STAT_SPEED];
+
+    // Apply stat stage multiplier
+    if (stage >= 0) {
+        speed = (speed * (2 + stage)) / 2;
+    } else {
+        speed = (speed * 2) / (2 - stage);
+    }
+
+    // Phase 4: No paralysis, weather, abilities, or items yet
+    // Future phases will add:
+    // - Paralysis (speed /= 4)
+    // - Swift Swim/Chlorophyll (speed *= 2)
+    // - Quick Claw (speed = UINT16_MAX)
+    // - Macho Brace (speed /= 2)
+
+    return speed;
+}
+
+/**
+ * @brief Determine which player goes first
+ * @param player_action Player's action
+ * @param enemy_action Enemy's action
+ * @return true if player goes first, false if enemy goes first
+ *
+ * Phase 4 implementation:
+ * 1. Compare move priorities (all moves are priority 0 for now)
+ * 2. Compare effective speeds (base speed * stat stages)
+ * 3. If tied, 50/50 random
+ *
+ * Based on pokeemerald's GetWhoStrikesFirst.
+ */
+bool BattleEngine::DetermineTurnOrder(const BattleAction& player_action,
+                                      const BattleAction& enemy_action) {
+    // Phase 4: Only handle moves (no switching yet)
+    if (player_action.type != ActionType::MOVE || enemy_action.type != ActionType::MOVE) {
+        return true;  // Default to player first
+    }
+
+    // Get move priorities (Phase 4: all moves are priority 0)
+    // Future: Add priority field to MoveData
+    int8_t player_priority = 0;
+    int8_t enemy_priority = 0;
+
+    // Compare priorities first
+    if (player_priority > enemy_priority) {
+        return true;  // Player has higher priority
+    } else if (enemy_priority > player_priority) {
+        return false;  // Enemy has higher priority
+    }
+
+    // Same priority - compare speeds
+    uint16_t player_speed = CalculateEffectiveSpeed(player_);
+    uint16_t enemy_speed = CalculateEffectiveSpeed(enemy_);
+
+    if (player_speed > enemy_speed) {
+        return true;  // Player is faster
+    } else if (enemy_speed > player_speed) {
+        return false;  // Enemy is faster
+    }
+
+    // Same speed - 50/50 random (based on pokeemerald: Random() & 1)
+    return (random::Random(2) == 0);
+}
+
 void BattleEngine::ExecuteTurn(const BattleAction& player_action,
                                const BattleAction& enemy_action) {
-    // Phase 3: Still hardcoded turn order - player always goes first
-    // TODO Phase 4: Determine order based on speed and priority
+    // Phase 4: Determine turn order based on speed and priority
+    bool player_goes_first = DetermineTurnOrder(player_action, enemy_action);
 
-    // Player attacks first
-    if (player_action.type == ActionType::MOVE) {
-        ExecuteMove(player_, enemy_, player_action.move);
-    }
+    if (player_goes_first) {
+        // Player attacks first
+        if (player_action.type == ActionType::MOVE) {
+            ExecuteMove(player_, enemy_, player_action.move);
+        }
 
-    // Check if battle is over after player's move
-    if (IsBattleOver()) {
-        return;
-    }
+        // Check if battle is over after player's move
+        if (IsBattleOver()) {
+            return;
+        }
 
-    // Enemy attacks second
-    if (enemy_action.type == ActionType::MOVE) {
-        ExecuteMove(enemy_, player_, enemy_action.move);
+        // Enemy attacks second
+        if (enemy_action.type == ActionType::MOVE) {
+            ExecuteMove(enemy_, player_, enemy_action.move);
+        }
+    } else {
+        // Enemy attacks first
+        if (enemy_action.type == ActionType::MOVE) {
+            ExecuteMove(enemy_, player_, enemy_action.move);
+        }
+
+        // Check if battle is over after enemy's move
+        if (IsBattleOver()) {
+            return;
+        }
+
+        // Player attacks second
+        if (player_action.type == ActionType::MOVE) {
+            ExecuteMove(player_, enemy_, player_action.move);
+        }
     }
 }
 
