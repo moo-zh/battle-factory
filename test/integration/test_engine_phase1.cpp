@@ -352,3 +352,143 @@ TEST_CASE(Engine_Phase2_SupportsTwoMoves) {
     engine.ExecuteTurn(twave, twave);
     TEST_ASSERT(engine.GetEnemy().status1 != 0, "Thunder Wave should paralyze");
 }
+
+// ============================================================================
+// PHASE 3 TESTS: Generalized Dispatch
+// ============================================================================
+
+/**
+ * @brief Phase 3: Multi-turn battle using all 15 implemented moves
+ *
+ * This test validates that the generalized dispatch system works for all effects:
+ * - Effect_Hit (Tackle)
+ * - Effect_BurnHit (Ember)
+ * - Effect_Paralyze (ThunderWave)
+ * - Effect_AttackDown (Growl)
+ * - Effect_DefenseDown (TailWhip)
+ * - Effect_AttackUp2 (SwordsDance)
+ * - Effect_RecoilHit (DoubleEdge)
+ * - Effect_DrainHit (GigaDrain)
+ * - Effect_DefenseUp2 (IronDefense)
+ * - Effect_SpeedDown (StringShot)
+ * - Effect_SpeedUp2 (Agility)
+ * - Effect_SpecialAttackUp2 (TailGlow)
+ * - Effect_SpecialDefenseDown2 (FakeTears)
+ * - Effect_SpecialDefenseUp2 (Amnesia)
+ * - Effect_MultiHit (FuryAttack)
+ */
+TEST_CASE(Engine_Phase3_AllEffectsWork) {
+    BattleEngine engine;
+
+    // Turn 1: Basic damage (Tackle vs Tackle)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
+    engine.ExecuteTurn(tackle, tackle);
+    TEST_ASSERT(engine.GetPlayer().current_hp < 50, "Tackle should deal damage to player");
+    TEST_ASSERT(engine.GetEnemy().current_hp < 50, "Tackle should deal damage to enemy");
+
+    // Turn 2: Burn damage move (Ember)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction ember{ActionType::MOVE, Player::PLAYER, 0, Move::Ember};
+    engine.ExecuteTurn(ember, tackle);
+    TEST_ASSERT(engine.GetEnemy().current_hp < 50, "Ember should deal damage");
+
+    // Turn 3: Status-only move (ThunderWave)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction twave{ActionType::MOVE, Player::PLAYER, 0, Move::ThunderWave};
+    engine.ExecuteTurn(twave, twave);
+    TEST_ASSERT(engine.GetEnemy().status1 != 0, "ThunderWave should paralyze");
+
+    // Turn 4: Attack down (Growl) - enemy doesn't attack so we can check stat
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction growl{ActionType::MOVE, Player::PLAYER, 0, Move::Growl};
+    BattleAction enemy_twave{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(growl, enemy_twave);
+    TEST_ASSERT(engine.GetEnemy().stat_stages[1] == -1,
+                "Growl should lower Attack");  // ATK is index 1
+
+    // Turn 5: Defense down (TailWhip)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction tailwhip{ActionType::MOVE, Player::PLAYER, 0, Move::TailWhip};
+    BattleAction enemy_twave2{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(tailwhip, enemy_twave2);
+    TEST_ASSERT(engine.GetEnemy().stat_stages[2] == -1,
+                "TailWhip should lower Defense");  // DEF is index 2
+
+    // Turn 6: Self-buff attack (SwordsDance) - verify player stat changes
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction swords{ActionType::MOVE, Player::PLAYER, 0, Move::SwordsDance};
+    BattleAction enemy_twave3{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(swords, enemy_twave3);
+    TEST_ASSERT(engine.GetPlayer().stat_stages[1] == +2,
+                "SwordsDance should raise Attack by 2");  // ATK is index 1
+
+    // Turn 7: Recoil move (DoubleEdge)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction dedge{ActionType::MOVE, Player::PLAYER, 0, Move::DoubleEdge};
+    uint16_t player_hp_before = engine.GetPlayer().current_hp;
+    engine.ExecuteTurn(dedge, tackle);
+    TEST_ASSERT(engine.GetPlayer().current_hp < player_hp_before,
+                "DoubleEdge should cause recoil damage");
+    TEST_ASSERT(engine.GetEnemy().current_hp < 50, "DoubleEdge should deal damage");
+
+    // Turn 8: Drain move (GigaDrain) - start player damaged to see healing
+    auto player_damaged = CreateCharmander();
+    player_damaged.current_hp = 25;  // Start damaged
+    engine.InitBattle(player_damaged, CreateBulbasaur());
+    BattleAction drain{ActionType::MOVE, Player::PLAYER, 0, Move::GigaDrain};
+    BattleAction enemy_twave4{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(drain, enemy_twave4);
+    TEST_ASSERT(engine.GetPlayer().current_hp > 25, "GigaDrain should heal attacker");
+    TEST_ASSERT(engine.GetEnemy().current_hp < 50, "GigaDrain should deal damage");
+
+    // Turn 9: Defense buff (IronDefense)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction iron{ActionType::MOVE, Player::PLAYER, 0, Move::IronDefense};
+    BattleAction enemy_twave5{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(iron, enemy_twave5);
+    TEST_ASSERT(engine.GetPlayer().stat_stages[2] == +2,
+                "IronDefense should raise Defense by 2");  // DEF is index 2
+
+    // Turn 10: Speed down (StringShot)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction string{ActionType::MOVE, Player::PLAYER, 0, Move::StringShot};
+    BattleAction enemy_twave6{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(string, enemy_twave6);
+    TEST_ASSERT(engine.GetEnemy().stat_stages[3] == -1, "StringShot should lower Speed");
+
+    // Turn 11: Speed buff (Agility)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction agility{ActionType::MOVE, Player::PLAYER, 0, Move::Agility};
+    BattleAction enemy_twave7{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(agility, enemy_twave7);
+    TEST_ASSERT(engine.GetPlayer().stat_stages[3] == +2, "Agility should raise Speed by 2");
+
+    // Turn 12: Sp. Attack buff (TailGlow)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction tail_glow{ActionType::MOVE, Player::PLAYER, 0, Move::TailGlow};
+    BattleAction enemy_twave8{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(tail_glow, enemy_twave8);
+    TEST_ASSERT(engine.GetPlayer().stat_stages[4] == +2, "TailGlow should raise Sp. Attack by 2");
+
+    // Turn 13: Sp. Defense down (FakeTears)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction fake{ActionType::MOVE, Player::PLAYER, 0, Move::FakeTears};
+    BattleAction enemy_twave9{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(fake, enemy_twave9);
+    TEST_ASSERT(engine.GetEnemy().stat_stages[5] == -2, "FakeTears should lower Sp. Defense by 2");
+
+    // Turn 14: Sp. Defense buff (Amnesia)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction amnesia{ActionType::MOVE, Player::PLAYER, 0, Move::Amnesia};
+    BattleAction enemy_twave10{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(amnesia, enemy_twave10);
+    TEST_ASSERT(engine.GetPlayer().stat_stages[5] == +2, "Amnesia should raise Sp. Defense by 2");
+
+    // Turn 15: Multi-hit move (FuryAttack)
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction fury{ActionType::MOVE, Player::PLAYER, 0, Move::FuryAttack};
+    BattleAction enemy_twave11{ActionType::MOVE, Player::ENEMY, 0, Move::ThunderWave};
+    engine.ExecuteTurn(fury, enemy_twave11);
+    TEST_ASSERT(engine.GetEnemy().current_hp < 50, "FuryAttack should deal damage");
+}
