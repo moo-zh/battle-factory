@@ -24,7 +24,7 @@ namespace test {
  */
 namespace config {
 /** @brief Maximum number of tests that can be registered. */
-constexpr uint8_t MAX_TESTS = 64;
+constexpr uint16_t MAX_TESTS = 256;
 }  // namespace config
 
 /**
@@ -321,7 +321,7 @@ extern TestRegistration* g_test_head;
  */
 inline void registerTest(const char* name, TestFunction func) {
     static TestRegistration registrations[config::MAX_TESTS];
-    static uint8_t registration_count = 0;
+    static uint16_t registration_count = 0;
 
     if (registration_count >= config::MAX_TESTS) {
         dbg_printf("%s[ERROR] Test limit (%d) exceeded!%s\n", Color::RED, config::MAX_TESTS,

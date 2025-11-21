@@ -14,6 +14,7 @@
 #include "../commands/stat_modify.hpp"
 #include "../commands/status.hpp"
 #include "../context.hpp"
+#include "../random.hpp"
 
 namespace battle {
 namespace effects {
@@ -442,6 +443,102 @@ inline void Effect_SpecialDefenseUp2(BattleContext& ctx) {
     // No AccuracyCheck - self-targeting moves can't miss (accuracy = 0 in move data)
     commands::ModifyStatStage(ctx, domain::STAT_SPDEF, +2, /* affects_user= */ true);
     // No CheckFaint - status-only moves don't deal damage
+}
+
+/**
+ * @brief Effect: MULTI_HIT - Multi-hit move that strikes 2-5 times (e.g., Fury Attack)
+ *
+ * This effect performs a damaging attack 2-5 times in a single turn. The number of hits
+ * is determined randomly at the start using pokeemerald's distribution algorithm.
+ * It:
+ * 1. Checks accuracy once (all subsequent hits land if first check passes)
+ * 2. Determines hit count (2-5) using pokeemerald's weighted RNG
+ * 3. For each hit:
+ *    - Calculate damage (fresh crit roll each time)
+ *    - Apply damage
+ *    - Check if defender fainted → break early if so
+ * 4. Check for faint after all hits
+ *
+ * This is the first **multi-hit mechanic**, introducing the concept of iterative damage
+ * application with early termination on faint. Each hit is independent for damage and
+ * crit calculation, but shares the same accuracy check.
+ *
+ * Hit count distribution (pokeemerald algorithm):
+ * - 2 hits: 37.5% (3/8)
+ * - 3 hits: 37.5% (3/8)
+ * - 4 hits: 12.5% (1/8)
+ * - 5 hits: 12.5% (1/8)
+ *
+ * Key mechanics:
+ * - Single accuracy check at start
+ * - Each hit has independent damage/crit rolls
+ * - Early termination if defender faints mid-sequence
+ * - Damage accumulates across all hits
+ *
+ * Example moves:
+ * - Fury Attack (15 power, 85 accuracy, Normal type) - pokeemerald ID 29
+ * - Double Slap (15 power, 85 accuracy, Normal type)
+ * - Pin Missile (25 power, 95 accuracy, Bug type)
+ * - Spike Cannon (20 power, 100 accuracy, Normal type)
+ *
+ * Based on pokeemerald:
+ * - data/battle_scripts_1.s:BattleScript_EffectMultiHit
+ * - src/battle_script_commands.c:Cmd_setmultihitcounter (hit count RNG)
+ * - src/battle_script_commands.c:Cmd_decrementmultihit (loop control)
+ */
+inline void Effect_MultiHit(BattleContext& ctx) {
+    commands::AccuracyCheck(ctx);
+
+    // If move missed, no hits occur
+    if (ctx.move_failed) {
+        ctx.hit_count = 0;
+        return;
+    }
+
+    // Determine hit count using pokeemerald's algorithm
+    // First roll: 0-3
+    uint8_t roll = random::Random(4);
+
+    uint8_t hit_count;
+    if (roll > 1) {
+        // 2 or 3 on first roll → second roll for 2-5
+        hit_count = random::Random(4) + 2;  // 2-5
+    } else {
+        // 0 or 1 on first roll → add 2 for 2-3
+        hit_count = roll + 2;  // 2-3
+    }
+
+    ctx.hit_count = 0;          // Track actual hits landed
+    uint16_t total_damage = 0;  // Accumulate damage across all hits
+
+    // Execute each hit
+    for (uint8_t i = 0; i < hit_count; i++) {
+        // Calculate and apply damage for this hit
+        commands::CalculateDamage(ctx);
+        total_damage += ctx.damage_dealt;  // Accumulate damage
+        commands::ApplyDamage(ctx);
+
+        // Track successful hit
+        ctx.hit_count++;
+
+        // Early exit if defender fainted
+        if (ctx.defender->current_hp == 0) {
+            ctx.defender->is_fainted = true;
+            break;
+        }
+
+        // Early exit if attacker fainted (shouldn't happen for Fury Attack, but safety check)
+        if (ctx.attacker->current_hp == 0) {
+            ctx.attacker->is_fainted = true;
+            break;
+        }
+    }
+
+    // Set total damage dealt across all hits
+    ctx.damage_dealt = total_damage;
+
+    // Final faint check
+    commands::CheckFaint(ctx);
 }
 
 }  // namespace effects

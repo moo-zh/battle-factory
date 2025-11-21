@@ -34,6 +34,7 @@ struct BattleContext {
     uint16_t drain_received;  // HP drained/healed by attacker (for testing)
     bool critical_hit;        // Was this a critical hit?
     uint8_t effectiveness;    // Type effectiveness: 0=immune, 1=0.25x, 2=0.5x, 4=1x, 8=2x, 16=4x
+    uint8_t hit_count;        // For multi-hit moves: number of times the move hit
 
     // === OVERRIDES (set by effect before CalculateDamage) ===
     uint8_t override_power;  // For variable power moves (Flail, Eruption)

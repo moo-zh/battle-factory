@@ -32,6 +32,7 @@ enum class Move : uint8_t {
     TailGlow,
     FakeTears,
     Amnesia,
+    FuryAttack,
     // TODO: Add more moves as we implement them
 };
 
