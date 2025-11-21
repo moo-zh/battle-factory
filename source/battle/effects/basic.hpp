@@ -8,6 +8,7 @@
 #include "../../domain/stats.hpp"
 #include "../commands/accuracy.hpp"
 #include "../commands/damage.hpp"
+#include "../commands/drain.hpp"
 #include "../commands/faint.hpp"
 #include "../commands/recoil.hpp"
 #include "../commands/stat_modify.hpp"
@@ -174,6 +175,37 @@ inline void Effect_AttackUp2(BattleContext& ctx) {
 }
 
 /**
+ * @brief Effect: DEFENSE_UP_2 - Raises user's Defense by 2 stages (e.g., Iron Defense)
+ *
+ * This effect raises the user's Defense stat by 2 stages without dealing damage.
+ * It:
+ * 1. Raises user's Defense stat stage by 2
+ *
+ * This is the **defensive counterpart to Swords Dance**, validating that the stat
+ * stage system works correctly for defensive stats. This is a fundamental defensive
+ * setup move pattern in Pokemon.
+ *
+ * Stat stages range from -6 to +6, and apply multipliers during damage calculation:
+ * - Stage +2: multiplier = (2 + 2) / 2 = 2.0x (doubles effective Defense)
+ * - This reduces physical damage taken by approximately 50%
+ *
+ * No accuracy check (self-targeting moves cannot miss), no damage dealt,
+ * no faint check.
+ *
+ * Example moves:
+ * - Iron Defense (0 power, 0 accuracy, Steel type)
+ * - Barrier (0 power, 0 accuracy, Psychic type)
+ * - Acid Armor (0 power, 0 accuracy, Poison type)
+ *
+ * Based on pokeemerald: data/battle_scripts_1.s:931-933, 787-803
+ */
+inline void Effect_DefenseUp2(BattleContext& ctx) {
+    // No AccuracyCheck - self-targeting moves can't miss (accuracy = 0 in move data)
+    commands::ModifyStatStage(ctx, domain::STAT_DEF, +2, /* affects_user= */ true);
+    // No CheckFaint - status-only moves don't deal damage
+}
+
+/**
  * @brief Effect: RECOIL_HIT - Damaging move with recoil (e.g., Double-Edge)
  *
  * This effect deals damage to the target, then the attacker takes recoil damage.
@@ -208,6 +240,48 @@ inline void Effect_RecoilHit(BattleContext& ctx) {
     commands::ApplyRecoil(ctx, 33);   // Recoil to attacker (33%)
     commands::CheckFaint(ctx);        // Check if defender fainted
     commands::CheckFaint(ctx, true);  // Check if attacker fainted from recoil
+}
+
+/**
+ * @brief Effect: DRAIN_HIT - Damaging move with HP drain (e.g., Giga Drain)
+ *
+ * This effect deals damage to the target, then the attacker heals for 50% of damage dealt.
+ * It:
+ * 1. Checks accuracy
+ * 2. Calculates damage
+ * 3. Applies damage to target
+ * 4. Applies drain healing to attacker (50% of damage dealt)
+ * 5. Checks if target fainted
+ * 6. Checks if attacker fainted (rarely happens, but possible)
+ *
+ * This is the mirror of recoil mechanics - instead of the **attacker damaging itself**,
+ * the attacker **heals itself** based on damage dealt. This introduces drain mechanics.
+ *
+ * Drain calculation:
+ * - Drain = damage_dealt / 2 (50% of damage)
+ * - Minimum drain = 1 (if any damage was dealt)
+ * - No drain if move misses or deals 0 damage
+ * - Cannot overheal (HP clamped to max_hp)
+ *
+ * Example moves:
+ * - Absorb (20 power, 50% drain, Grass type)
+ * - Mega Drain (40 power, 50% drain, Grass type)
+ * - Giga Drain (60 power, 50% drain, Grass type)
+ * - Drain Punch (60 power, 50% drain, Fighting type)
+ * - Leech Life (20 power, 50% drain, Bug type)
+ *
+ * Based on pokeemerald: data/battle_scripts_1.s:323-359 (BattleScript_EffectAbsorb)
+ * Cmd_negativedamage in src/battle_script_commands.c:
+ *   gBattleMoveDamage = -(gHpDealt / 2);  // negative = healing
+ *   if (gBattleMoveDamage == 0) gBattleMoveDamage = -1;  // minimum 1
+ */
+inline void Effect_DrainHit(BattleContext& ctx) {
+    commands::AccuracyCheck(ctx);
+    commands::CalculateDamage(ctx);
+    commands::ApplyDamage(ctx);       // Damage to defender
+    commands::ApplyDrain(ctx, 50);    // Drain to attacker (50%)
+    commands::CheckFaint(ctx);        // Check if defender fainted
+    commands::CheckFaint(ctx, true);  // Check if attacker fainted (rare)
 }
 
 }  // namespace effects

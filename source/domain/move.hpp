@@ -25,6 +25,8 @@ enum class Move : uint8_t {
     TailWhip,
     SwordsDance,
     DoubleEdge,
+    GigaDrain,
+    IronDefense,
     // TODO: Add more moves as we implement them
 };
 
