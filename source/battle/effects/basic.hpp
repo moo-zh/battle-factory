@@ -9,6 +9,7 @@
 #include "../commands/accuracy.hpp"
 #include "../commands/damage.hpp"
 #include "../commands/faint.hpp"
+#include "../commands/recoil.hpp"
 #include "../commands/stat_modify.hpp"
 #include "../commands/status.hpp"
 #include "../context.hpp"
@@ -170,6 +171,43 @@ inline void Effect_AttackUp2(BattleContext& ctx) {
     // No AccuracyCheck - self-targeting moves can't miss (accuracy = 0 in move data)
     commands::ModifyStatStage(ctx, domain::STAT_ATK, +2, /* affects_user= */ true);
     // No CheckFaint - status-only moves don't deal damage
+}
+
+/**
+ * @brief Effect: RECOIL_HIT - Damaging move with recoil (e.g., Double-Edge)
+ *
+ * This effect deals damage to the target, then the attacker takes recoil damage.
+ * It:
+ * 1. Checks accuracy
+ * 2. Calculates damage
+ * 3. Applies damage to target
+ * 4. Applies recoil damage to attacker (33% of damage dealt)
+ * 5. Checks if target fainted
+ * 6. Checks if attacker fainted from recoil
+ *
+ * This is the first move where the **attacker can damage itself** through
+ * move side effects. This introduces recoil mechanics.
+ *
+ * Recoil calculation:
+ * - Recoil = damage_dealt / 3 (33% of damage)
+ * - Minimum recoil = 1 (if any damage was dealt)
+ * - No recoil if move misses or deals 0 damage
+ *
+ * Example moves:
+ * - Double-Edge (120 power, 33% recoil, Normal type)
+ * - Brave Bird (120 power, 33% recoil, Flying type)
+ * - Flare Blitz (120 power, 33% recoil, Fire type, can burn)
+ *
+ * Based on pokeemerald: data/battle_scripts_1.s:896-900
+ * MOVE_EFFECT_RECOIL_33 in src/battle_script_commands.c
+ */
+inline void Effect_RecoilHit(BattleContext& ctx) {
+    commands::AccuracyCheck(ctx);
+    commands::CalculateDamage(ctx);
+    commands::ApplyDamage(ctx);       // Damage to defender
+    commands::ApplyRecoil(ctx, 33);   // Recoil to attacker (33%)
+    commands::CheckFaint(ctx);        // Check if defender fainted
+    commands::CheckFaint(ctx, true);  // Check if attacker fainted from recoil
 }
 
 }  // namespace effects
