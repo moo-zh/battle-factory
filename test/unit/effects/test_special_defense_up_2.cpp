@@ -1,0 +1,226 @@
+/**
+ * @file test/unit/effects/test_special_defense_up_2.cpp
+ * @brief Tests for Effect_SpecialDefenseUp2 (Amnesia)
+ */
+
+#include "../../../source/battle/effects/basic.hpp"
+#include "../../../source/battle/state/pokemon.hpp"
+#include "../../../source/domain/move.hpp"
+#include "../../../source/domain/species.hpp"
+#include "../../../source/domain/stats.hpp"
+#include "framework.hpp"
+
+using namespace battle;
+using namespace battle::effects;
+using namespace battle::state;
+using namespace domain;
+
+// Helper: Create test Charmander
+static Pokemon CreateCharmander() {
+    Pokemon p;
+    p.species = Species::Charmander;
+    p.level = 5;
+    p.type1 = Type::Fire;
+    p.type2 = Type::None;
+    p.max_hp = 20;
+    p.current_hp = 20;
+    p.attack = 11;
+    p.defense = 9;
+    p.sp_attack = 12;
+    p.sp_defense = 10;
+    p.speed = 13;
+    p.status1 = 0;
+
+    // Initialize stat stages to 0 (neutral)
+    for (int i = 0; i < 8; i++) {
+        p.stat_stages[i] = 0;
+    }
+
+    return p;
+}
+
+// Helper: Create test Bulbasaur
+static Pokemon CreateBulbasaur() {
+    Pokemon p;
+    p.species = Species::Bulbasaur;
+    p.level = 5;
+    p.type1 = Type::Grass;
+    p.type2 = Type::Poison;
+    p.max_hp = 21;
+    p.current_hp = 21;
+    p.attack = 10;
+    p.defense = 10;
+    p.sp_attack = 12;
+    p.sp_defense = 12;
+    p.speed = 9;
+    p.status1 = 0;
+
+    // Initialize stat stages to 0 (neutral)
+    for (int i = 0; i < 8; i++) {
+        p.stat_stages[i] = 0;
+    }
+
+    return p;
+}
+
+// Helper: Create Amnesia move
+static MoveData CreateAmnesia() {
+    MoveData m;
+    m.move = Move::Amnesia;
+    m.type = Type::Psychic;
+    m.power = 0;     // Status move, no damage
+    m.accuracy = 0;  // Self-targeting moves can't miss (no accuracy check)
+    m.pp = 20;
+    m.effect_chance = 0;  // Not applicable for stat moves
+    return m;
+}
+
+// Helper: Set up battle context
+static BattleContext SetupContext(Pokemon* attacker, Pokemon* defender, MoveData* move) {
+    BattleContext ctx;
+    ctx.attacker = attacker;
+    ctx.defender = defender;
+    ctx.move = move;
+    ctx.move_failed = false;
+    ctx.damage_dealt = 0;
+    ctx.critical_hit = false;
+    ctx.effectiveness = 4;  // 1x (normal effectiveness)
+    ctx.override_power = 0;
+    ctx.override_type = 0;
+    return ctx;
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_RaisesSpecialDefenseStage) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+    Effect_SpecialDefenseUp2(ctx);
+
+    TEST_ASSERT(attacker.stat_stages[STAT_SPDEF] == +2,
+                "Amnesia should raise user's Sp. Defense by 2 stages");
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_DoesNotDealDamage) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+    uint16_t original_hp = defender.current_hp;
+
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+    Effect_SpecialDefenseUp2(ctx);
+
+    TEST_ASSERT(defender.current_hp == original_hp, "Amnesia should not deal damage");
+    TEST_ASSERT(ctx.damage_dealt == 0, "Amnesia should not calculate damage");
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_CanStackMultipleTimes) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+
+    // Use Amnesia 3 times: +2, +2, +2 = +6 (capped)
+    Effect_SpecialDefenseUp2(ctx);
+    ctx.move_failed = false;  // Reset for next use
+    Effect_SpecialDefenseUp2(ctx);
+    ctx.move_failed = false;
+    Effect_SpecialDefenseUp2(ctx);
+
+    TEST_ASSERT(attacker.stat_stages[STAT_SPDEF] == +6, "Amnesia should stack to +6 (cap)");
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_MaximumStagePlus6) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+    attacker.stat_stages[STAT_SPDEF] = +6;  // Already at maximum
+
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+    Effect_SpecialDefenseUp2(ctx);
+
+    TEST_ASSERT(attacker.stat_stages[STAT_SPDEF] == +6, "Sp. Defense stage should not go above +6");
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_CapsAtPlus6FromPlus5) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+    attacker.stat_stages[STAT_SPDEF] = +5;  // One away from cap
+
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+    Effect_SpecialDefenseUp2(ctx);
+
+    TEST_ASSERT(attacker.stat_stages[STAT_SPDEF] == +6,
+                "Amnesia should cap at +6 (only +1 effective from +5)");
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_CanRaiseFromNegativeStages) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+    attacker.stat_stages[STAT_SPDEF] = -2;  // Lowered by Fake Tears
+
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+    Effect_SpecialDefenseUp2(ctx);
+
+    TEST_ASSERT(attacker.stat_stages[STAT_SPDEF] == 0, "Amnesia should raise from -2 to 0");
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_DoesNotModifyDefender) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+
+    int8_t original_stage = defender.stat_stages[STAT_SPDEF];
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+    Effect_SpecialDefenseUp2(ctx);
+
+    TEST_ASSERT(defender.stat_stages[STAT_SPDEF] == original_stage,
+                "Amnesia should not affect defender's stats");
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_DoesNotAffectOtherStats) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+    Effect_SpecialDefenseUp2(ctx);
+
+    // Only Sp. Defense should be raised
+    TEST_ASSERT(attacker.stat_stages[STAT_SPDEF] == +2, "Sp. Defense should be +2");
+    TEST_ASSERT(attacker.stat_stages[STAT_ATK] == 0, "Attack should be unchanged");
+    TEST_ASSERT(attacker.stat_stages[STAT_DEF] == 0, "Defense should be unchanged");
+    TEST_ASSERT(attacker.stat_stages[STAT_SPEED] == 0, "Speed should be unchanged");
+    TEST_ASSERT(attacker.stat_stages[STAT_SPATK] == 0, "Sp. Attack should be unchanged");
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_DoesNotCauseFaint) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+    Effect_SpecialDefenseUp2(ctx);
+
+    TEST_ASSERT(!defender.is_fainted, "Amnesia should not cause faint (it's a status move)");
+    TEST_ASSERT(defender.current_hp > 0, "Defender should still have HP");
+}
+
+TEST_CASE(Effect_SpecialDefenseUp2_NoAccuracyCheck) {
+    auto attacker = CreateCharmander();
+    auto defender = CreateBulbasaur();
+    auto move = CreateAmnesia();
+    move.accuracy = 0;  // Self-targeting moves have accuracy = 0
+
+    BattleContext ctx = SetupContext(&attacker, &defender, &move);
+    Effect_SpecialDefenseUp2(ctx);
+
+    // Move should never miss
+    TEST_ASSERT(!ctx.move_failed, "Amnesia should never miss (self-targeting)");
+    TEST_ASSERT(attacker.stat_stages[STAT_SPDEF] == +2,
+                "Sp. Defense should be raised even with accuracy=0");
+}

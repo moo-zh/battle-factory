@@ -25,6 +25,9 @@ enum class Type : uint8_t {
     Poison,
     Rock,
     Ground,
+    Bug,
+    Psychic,
+    Dark,
     // TODO: Add remaining types as needed
 };
 

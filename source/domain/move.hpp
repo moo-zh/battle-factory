@@ -29,6 +29,9 @@ enum class Move : uint8_t {
     IronDefense,
     StringShot,
     Agility,
+    TailGlow,
+    FakeTears,
+    Amnesia,
     // TODO: Add more moves as we implement them
 };
 

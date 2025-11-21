@@ -349,5 +349,100 @@ inline void Effect_SpeedUp2(BattleContext& ctx) {
     // No CheckFaint - status-only moves don't deal damage
 }
 
+/**
+ * @brief Effect: SPECIAL_ATTACK_UP_2 - Raises user's Sp. Attack by 2 stages (e.g., Tail Glow)
+ *
+ * This effect raises the user's Special Attack stat by 2 stages without dealing damage.
+ * It:
+ * 1. Raises user's Sp. Attack stat stage by 2
+ *
+ * This is the **Special Attack counterpart to Swords Dance** (Attack +2), extending the
+ * stat system to **special offensive stats**. This completes the offensive stat boost
+ * validation (Attack +2 via Swords Dance, Sp. Attack +2 via Tail Glow).
+ *
+ * Stat stages range from -6 to +6, and apply multipliers during damage calculation:
+ * - Stage +2: multiplier = (2 + 2) / 2 = 2.0x (doubles special damage output)
+ *
+ * Sp. Attack affects the damage of special moves (Ember, Psychic, etc.).
+ *
+ * No accuracy check (self-targeting moves cannot miss), no damage dealt,
+ * no faint check.
+ *
+ * Example moves:
+ * - Tail Glow (0 power, 0 accuracy, Bug type) - pokeemerald ID 53
+ * - Nasty Plot (0 power, 0 accuracy, Dark type) - Gen IV+
+ *
+ * Based on pokeemerald: include/constants/battle_move_effects.h:53, 787-803
+ */
+inline void Effect_SpecialAttackUp2(BattleContext& ctx) {
+    // No AccuracyCheck - self-targeting moves can't miss (accuracy = 0 in move data)
+    commands::ModifyStatStage(ctx, domain::STAT_SPATK, +2, /* affects_user= */ true);
+    // No CheckFaint - status-only moves don't deal damage
+}
+
+/**
+ * @brief Effect: SPECIAL_DEFENSE_DOWN_2 - Lowers target's Sp. Defense by 2 stages (e.g., Fake
+ * Tears)
+ *
+ * This effect lowers the target's Special Defense stat by 2 stages without dealing damage.
+ * It:
+ * 1. Checks accuracy
+ * 2. Lowers target's Sp. Defense stat stage by 2
+ *
+ * This extends the stat system to **special defensive stats**, introducing the concept of
+ * **harshly lowering** a special defensive stat (-2 stages). This mirrors Tail Whip (Def -1)
+ * but with a stronger reduction to special bulk.
+ *
+ * Stat stages range from -6 to +6, and apply multipliers during damage calculation:
+ * - Stage -2: multiplier = 2 / (2 - (-2)) = 2 / 4 = 0.5x (halves effective Sp. Defense)
+ * - This approximately doubles special damage taken
+ *
+ * Sp. Defense affects damage reduction from special moves (Ember, Psychic, etc.).
+ *
+ * No damage dealt, no faint check.
+ *
+ * Example moves:
+ * - Fake Tears (0 power, 100 accuracy, Dark type) - pokeemerald ID 62
+ * - Metal Sound (0 power, 85 accuracy, Steel type)
+ *
+ * Based on pokeemerald: include/constants/battle_move_effects.h:62, 555-583
+ */
+inline void Effect_SpecialDefenseDown2(BattleContext& ctx) {
+    commands::AccuracyCheck(ctx);
+    commands::ModifyStatStage(ctx, domain::STAT_SPDEF, -2);  // Lower Sp. Defense by 2 stages
+    // No CheckFaint - status-only moves don't deal damage
+}
+
+/**
+ * @brief Effect: SPECIAL_DEFENSE_UP_2 - Raises user's Sp. Defense by 2 stages (e.g., Amnesia)
+ *
+ * This effect raises the user's Special Defense stat by 2 stages without dealing damage.
+ * It:
+ * 1. Raises user's Sp. Defense stat stage by 2
+ *
+ * This is the **Special Defense counterpart to Iron Defense** (Defense +2), completing the
+ * stat system validation for all **Gen III core stats** (HP, Attack, Defense, Speed,
+ * Sp. Attack, Sp. Defense). This is one of the best special bulk setup moves.
+ *
+ * Stat stages range from -6 to +6, and apply multipliers during damage calculation:
+ * - Stage +2: multiplier = (2 + 2) / 2 = 2.0x (doubles effective Sp. Defense)
+ * - This reduces special damage taken by approximately 50%
+ *
+ * Sp. Defense affects damage reduction from special moves (Ember, Psychic, etc.).
+ *
+ * No accuracy check (self-targeting moves cannot miss), no damage dealt,
+ * no faint check.
+ *
+ * Example moves:
+ * - Amnesia (0 power, 0 accuracy, Psychic type) - pokeemerald ID 54
+ *
+ * Based on pokeemerald: include/constants/battle_move_effects.h:54, 787-803
+ */
+inline void Effect_SpecialDefenseUp2(BattleContext& ctx) {
+    // No AccuracyCheck - self-targeting moves can't miss (accuracy = 0 in move data)
+    commands::ModifyStatStage(ctx, domain::STAT_SPDEF, +2, /* affects_user= */ true);
+    // No CheckFaint - status-only moves don't deal damage
+}
+
 }  // namespace effects
 }  // namespace battle
