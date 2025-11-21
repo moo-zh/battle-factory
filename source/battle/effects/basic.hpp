@@ -318,5 +318,36 @@ inline void Effect_DrainHit(BattleContext& ctx) {
     commands::CheckFaint(ctx, true);  // Check if attacker fainted (rare)
 }
 
+/**
+ * @brief Effect: SPEED_UP_2 - Raises user's Speed by 2 stages (e.g., Agility)
+ *
+ * This effect raises the user's Speed stat by 2 stages without dealing damage.
+ * It:
+ * 1. Raises user's Speed stat stage by 2
+ *
+ * This is the **Speed counterpart to Swords Dance** (Attack +2) and **completes the
+ * Speed stat validation** (String Shot for Speed -1, Agility for Speed +2). This is
+ * one of the most powerful setup moves in Pokemon - doubling effective Speed.
+ *
+ * Stat stages range from -6 to +6, and apply multipliers:
+ * - Stage +2: multiplier = (2 + 2) / 2 = 2.0x (doubles effective Speed)
+ *
+ * Speed affects turn order in battle. Higher Speed = acts first in the turn.
+ *
+ * No accuracy check (self-targeting moves cannot miss), no damage dealt,
+ * no faint check.
+ *
+ * Example moves:
+ * - Agility (0 power, 0 accuracy, Psychic type)
+ * - Rock Polish (0 power, 0 accuracy, Rock type)
+ *
+ * Based on pokeemerald: data/battle_scripts_1.s:935-937, 787-803
+ */
+inline void Effect_SpeedUp2(BattleContext& ctx) {
+    // No AccuracyCheck - self-targeting moves can't miss (accuracy = 0 in move data)
+    commands::ModifyStatStage(ctx, domain::STAT_SPEED, +2, /* affects_user= */ true);
+    // No CheckFaint - status-only moves don't deal damage
+}
+
 }  // namespace effects
 }  // namespace battle

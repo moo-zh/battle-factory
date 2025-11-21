@@ -28,6 +28,7 @@ enum class Move : uint8_t {
     GigaDrain,
     IronDefense,
     StringShot,
+    Agility,
     // TODO: Add more moves as we implement them
 };
 
