@@ -104,14 +104,42 @@ inline void Effect_Paralyze(BattleContext& ctx) {
  *
  * Example moves:
  * - Growl (0 power, 100 accuracy, Normal type)
- * - Tail Whip (0 power, 100 accuracy, Normal type) - lowers Defense instead
- * - Leer (0 power, 100 accuracy, Normal type) - lowers Defense instead
  *
  * Based on pokeemerald: data/battle_scripts_1.s:516-554
  */
 inline void Effect_AttackDown(BattleContext& ctx) {
     commands::AccuracyCheck(ctx);
     commands::ModifyStatStage(ctx, domain::STAT_ATK, -1);  // Lower Attack by 1 stage
+    // No CheckFaint - status-only moves don't deal damage
+}
+
+/**
+ * @brief Effect: DEFENSE_DOWN - Lowers target's Defense by 1 stage (e.g., Tail Whip)
+ *
+ * This effect lowers the target's Defense stat by 1 stage without dealing damage.
+ * It:
+ * 1. Checks accuracy
+ * 2. Lowers Defense stat stage by 1
+ *
+ * This mirrors Effect_AttackDown but targets Defense instead, demonstrating that
+ * the stat stage system works for different stats.
+ *
+ * Stat stages range from -6 to +6, and apply multipliers during damage calculation:
+ * - If stage >= 0: multiplier = (2 + stage) / 2
+ * - If stage < 0:  multiplier = 2 / (2 - stage)
+ *
+ * No damage is dealt, so there's no damage calculation, damage application,
+ * or faint check.
+ *
+ * Example moves:
+ * - Tail Whip (0 power, 100 accuracy, Normal type)
+ * - Leer (0 power, 100 accuracy, Normal type)
+ *
+ * Based on pokeemerald: data/battle_scripts_1.s:555-558
+ */
+inline void Effect_DefenseDown(BattleContext& ctx) {
+    commands::AccuracyCheck(ctx);
+    commands::ModifyStatStage(ctx, domain::STAT_DEF, -1);  // Lower Defense by 1 stage
     // No CheckFaint - status-only moves don't deal damage
 }
 

@@ -22,6 +22,7 @@ enum class Move : uint8_t {
     Ember,
     ThunderWave,
     Growl,
+    TailWhip,
     // TODO: Add more moves as we implement them
 };
 
