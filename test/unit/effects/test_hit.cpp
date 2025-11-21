@@ -9,11 +9,11 @@
 #include "framework.hpp"
 
 // Include real implementation headers
-#include "../source/battle/context.hpp"
-#include "../source/battle/effects/basic.hpp"
-#include "../source/battle/state/pokemon.hpp"
-#include "../source/domain/move.hpp"
-#include "../source/domain/species.hpp"
+#include "../../../source/battle/context.hpp"
+#include "../../../source/battle/effects/basic.hpp"
+#include "../../../source/battle/state/pokemon.hpp"
+#include "../../../source/domain/move.hpp"
+#include "../../../source/domain/species.hpp"
 
 // ============================================================================
 // TEST HELPERS

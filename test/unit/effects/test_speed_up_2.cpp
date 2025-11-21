@@ -3,11 +3,11 @@
  * @brief Tests for Effect_SpeedUp2 (Agility)
  */
 
-#include "../source/battle/effects/basic.hpp"
-#include "../source/battle/state/pokemon.hpp"
-#include "../source/domain/move.hpp"
-#include "../source/domain/species.hpp"
-#include "../source/domain/stats.hpp"
+#include "../../../source/battle/effects/basic.hpp"
+#include "../../../source/battle/state/pokemon.hpp"
+#include "../../../source/domain/move.hpp"
+#include "../../../source/domain/species.hpp"
+#include "../../../source/domain/stats.hpp"
 #include "framework.hpp"
 
 using namespace battle;

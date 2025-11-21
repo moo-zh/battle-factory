@@ -3,10 +3,10 @@
  * @brief Tests for Effect_RecoilHit (Double-Edge)
  */
 
-#include "../source/battle/effects/basic.hpp"
-#include "../source/battle/state/pokemon.hpp"
-#include "../source/domain/move.hpp"
-#include "../source/domain/species.hpp"
+#include "../../../source/battle/effects/basic.hpp"
+#include "../../../source/battle/state/pokemon.hpp"
+#include "../../../source/domain/move.hpp"
+#include "../../../source/domain/species.hpp"
 #include "framework.hpp"
 
 using namespace battle;
