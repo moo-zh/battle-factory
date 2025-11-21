@@ -15,8 +15,8 @@ namespace commands {
  * @brief Modify a Pokemon's stat stage
  *
  * CONTRACT:
- * - Inputs: ctx.defender, stat, change amount
- * - Outputs: Modifies ctx.defender->stat_stages[stat]
+ * - Inputs: ctx.attacker or ctx.defender (based on affects_user), stat, change amount
+ * - Outputs: Modifies target->stat_stages[stat]
  * - Does: Clamps stat stage to -6..+6, checks if change occurred
  * - Does NOT: Deal damage, check accuracy (already done)
  *
@@ -27,25 +27,36 @@ namespace commands {
  *   - If stage >= 0: multiplier = (2 + stage) / 2
  *   - If stage < 0:  multiplier = 2 / (2 - stage)
  *
+ * TARGETING:
+ * - affects_user = false (default): Modifies defender (Growl, Tail Whip)
+ * - affects_user = true: Modifies attacker (Swords Dance, Iron Defense)
+ *
  * EDGE CASES:
  * - Already at -6: Cannot go lower, no change
  * - Already at +6: Cannot go higher, no change
  * - Move already failed: Skip modification
  *
- * Based on pokeemerald: data/battle_scripts_1.s:516-554
- * BattleScript_EffectStatDown and statbuffchange commands
+ * Based on pokeemerald: data/battle_scripts_1.s:516-554, 787-803
+ * BattleScript_EffectStatDown, BattleScript_EffectStatUp, and statbuffchange commands
+ * The MOVE_EFFECT_AFFECTS_USER flag in pokeemerald controls targeting
  *
  * @param ctx Battle context containing attacker, defender, move
  * @param stat Which stat to modify (STAT_ATK, STAT_DEF, etc.)
  * @param change How much to change the stage (negative to lower, positive to raise)
+ * @param affects_user If true, modifies attacker; if false, modifies defender (default)
  */
-inline void ModifyStatStage(BattleContext& ctx, domain::Stat stat, int8_t change) {
+inline void ModifyStatStage(BattleContext& ctx, domain::Stat stat, int8_t change,
+                            bool affects_user = false) {
     // Guard: skip if move already failed
     if (ctx.move_failed)
         return;
 
+    // Select target based on affects_user flag
+    // This matches pokeemerald's MOVE_EFFECT_AFFECTS_USER flag behavior
+    state::Pokemon* target = affects_user ? ctx.attacker : ctx.defender;
+
     // Get current stage for this stat
-    int8_t current_stage = ctx.defender->stat_stages[stat];
+    int8_t current_stage = target->stat_stages[stat];
 
     // Calculate new stage (clamped to -6..+6)
     int16_t new_stage_unclamped = (int16_t)current_stage + (int16_t)change;
@@ -65,11 +76,12 @@ inline void ModifyStatStage(BattleContext& ctx, domain::Stat stat, int8_t change
     }
 
     // Apply the stat stage change
-    ctx.defender->stat_stages[stat] = new_stage;
+    target->stat_stages[stat] = new_stage;
 
     // TODO (future): Set battle message
     // If change < 0: "[Pokemon]'s [Stat] fell!"
-    // If change > 0: "[Pokemon]'s [Stat] rose!"
+    // If change > 0 and change == 1: "[Pokemon]'s [Stat] rose!"
+    // If change > 0 and change >= 2: "[Pokemon]'s [Stat] rose sharply!"
 }
 
 }  // namespace commands

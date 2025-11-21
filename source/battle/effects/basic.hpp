@@ -143,5 +143,34 @@ inline void Effect_DefenseDown(BattleContext& ctx) {
     // No CheckFaint - status-only moves don't deal damage
 }
 
+/**
+ * @brief Effect: ATTACK_UP_2 - Raises user's Attack by 2 stages (e.g., Swords Dance)
+ *
+ * This effect raises the user's Attack stat by 2 stages without dealing damage.
+ * It:
+ * 1. Raises user's Attack stat stage by 2
+ *
+ * This is the first **self-targeting stat move**, introducing the concept that
+ * stat changes can affect the attacker instead of the defender. This is a
+ * fundamental setup move pattern in Pokemon.
+ *
+ * Stat stages range from -6 to +6, and apply multipliers during damage calculation:
+ * - Stage +2: multiplier = (2 + 2) / 2 = 2.0x (doubles damage output)
+ *
+ * No accuracy check (self-targeting moves cannot miss), no damage dealt,
+ * no faint check.
+ *
+ * Example moves:
+ * - Swords Dance (0 power, 0 accuracy, Normal type)
+ * - Nasty Plot (Sp. Attack +2)
+ *
+ * Based on pokeemerald: data/battle_scripts_1.s:719-721, 787-803
+ */
+inline void Effect_AttackUp2(BattleContext& ctx) {
+    // No AccuracyCheck - self-targeting moves can't miss (accuracy = 0 in move data)
+    commands::ModifyStatStage(ctx, domain::STAT_ATK, +2, /* affects_user= */ true);
+    // No CheckFaint - status-only moves don't deal damage
+}
+
 }  // namespace effects
 }  // namespace battle
