@@ -146,6 +146,40 @@ inline void Effect_DefenseDown(BattleContext& ctx) {
 }
 
 /**
+ * @brief Effect: SPEED_DOWN - Lowers target's Speed by 1 stage (e.g., String Shot)
+ *
+ * This effect lowers the target's Speed stat by 1 stage without dealing damage.
+ * It:
+ * 1. Checks accuracy
+ * 2. Lowers Speed stat stage by 1
+ *
+ * This extends the stat stage system to **Speed** (the third stat validated),
+ * demonstrating that the stat system works uniformly across Attack, Defense, and Speed.
+ *
+ * Stat stages range from -6 to +6, and apply multipliers:
+ * - If stage >= 0: multiplier = (2 + stage) / 2
+ * - If stage < 0:  multiplier = 2 / (2 - stage)
+ * - Stage -1 = 0.67x Speed (~33% slower)
+ *
+ * Speed affects turn order in battle. Lower Speed = acts later in the turn.
+ *
+ * No damage is dealt, so there's no damage calculation, damage application,
+ * or faint check.
+ *
+ * Example moves:
+ * - String Shot (0 power, 95 accuracy, Bug type)
+ * - Cotton Spore (0 power, 100 accuracy, Grass type, Speed -2)
+ * - Scary Face (0 power, 100 accuracy, Normal type, Speed -2)
+ *
+ * Based on pokeemerald: data/battle_scripts_1.s:524-526, 555-583
+ */
+inline void Effect_SpeedDown(BattleContext& ctx) {
+    commands::AccuracyCheck(ctx);
+    commands::ModifyStatStage(ctx, domain::STAT_SPEED, -1);  // Lower Speed by 1 stage
+    // No CheckFaint - status-only moves don't deal damage
+}
+
+/**
  * @brief Effect: ATTACK_UP_2 - Raises user's Attack by 2 stages (e.g., Swords Dance)
  *
  * This effect raises the user's Attack stat by 2 stages without dealing damage.
