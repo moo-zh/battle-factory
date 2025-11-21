@@ -10,98 +10,11 @@
 #include "../../../source/domain/stats.hpp"
 #include "framework.hpp"
 
-using namespace battle;
-using namespace battle::effects;
-using namespace battle::state;
-using namespace domain;
+// Include common test helpers
+#include "../test_helpers.hpp"
 
-// Helper: Create test Bulbasaur
-static Pokemon CreateBulbasaur() {
-    Pokemon p;
-    p.species = Species::Bulbasaur;
-    p.level = 5;
-    p.type1 = Type::Grass;
-    p.type2 = Type::Poison;
-    p.max_hp = 21;
-    p.current_hp = 21;
-    p.attack = 10;
-    p.defense = 10;
-    p.sp_attack = 12;
-    p.sp_defense = 12;
-    p.speed = 9;
-    p.status1 = 0;
-
-    // Initialize stat stages to 0 (neutral)
-    for (int i = 0; i < 8; i++) {
-        p.stat_stages[i] = 0;
-    }
-
-    return p;
-}
-
-// Helper: Create test Charmander
-static Pokemon CreateCharmander() {
-    Pokemon p;
-    p.species = Species::Charmander;
-    p.level = 5;
-    p.type1 = Type::Fire;
-    p.type2 = Type::None;
-    p.max_hp = 20;
-    p.current_hp = 20;
-    p.attack = 11;
-    p.defense = 9;
-    p.sp_attack = 12;
-    p.sp_defense = 10;
-    p.speed = 13;
-    p.status1 = 0;
-
-    // Initialize stat stages to 0 (neutral)
-    for (int i = 0; i < 8; i++) {
-        p.stat_stages[i] = 0;
-    }
-
-    return p;
-}
-
-// Helper: Create Iron Defense move
-static MoveData CreateIronDefense() {
-    MoveData m;
-    m.move = Move::IronDefense;
-    m.type = Type::Normal;  // TODO: Change to Type::Steel when Steel type is implemented
-    m.power = 0;            // Status move, no damage
-    m.accuracy = 0;         // Self-targeting moves can't miss (no accuracy check)
-    m.pp = 15;
-    m.effect_chance = 0;  // Not applicable for stat moves
-    return m;
-}
-
-// Helper: Create Tackle move (for integration test)
-static MoveData CreateTackle() {
-    MoveData m;
-    m.move = Move::Tackle;
-    m.type = Type::Normal;
-    m.power = 40;
-    m.accuracy = 100;
-    m.pp = 35;
-    m.effect_chance = 0;
-    return m;
-}
-
-// Helper: Set up battle context
-static BattleContext SetupContext(Pokemon* attacker, Pokemon* defender, MoveData* move) {
-    BattleContext ctx;
-    ctx.attacker = attacker;
-    ctx.defender = defender;
-    ctx.move = move;
-    ctx.move_failed = false;
-    ctx.damage_dealt = 0;
-    ctx.critical_hit = false;
-    ctx.effectiveness = 4;  // 1x (normal effectiveness)
-    ctx.override_power = 0;
-    ctx.override_type = 0;
-    return ctx;
-}
-
+// Include real implementation headers
+#include "../../../source/battle/effects/basic.hpp"
 TEST_CASE(Effect_DefenseUp2_RaisesDefenseStage) {
     auto attacker = CreateBulbasaur();
     auto defender = CreateCharmander();

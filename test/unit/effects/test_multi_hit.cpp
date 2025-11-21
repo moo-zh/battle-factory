@@ -31,6 +31,10 @@ static Pokemon CreateCharmander() {
     p.speed = 13;
     p.status1 = 0;
 
+    // Initialize protection state
+    p.is_protected = false;
+    p.protect_count = 0;
+
     // Initialize stat stages to 0 (neutral)
     for (int i = 0; i < 8; i++) {
         p.stat_stages[i] = 0;
@@ -54,6 +58,10 @@ static Pokemon CreateBulbasaur() {
     p.sp_defense = 12;
     p.speed = 9;
     p.status1 = 0;
+
+    // Initialize protection state
+    p.is_protected = false;
+    p.protect_count = 0;
 
     // Initialize stat stages to 0 (neutral)
     for (int i = 0; i < 8; i++) {

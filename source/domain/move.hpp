@@ -33,6 +33,7 @@ enum class Move : uint8_t {
     FakeTears,
     Amnesia,
     FuryAttack,
+    Protect,
     // TODO: Add more moves as we implement them
 };
 
@@ -46,6 +47,7 @@ struct MoveData {
     uint8_t accuracy;
     uint8_t pp;
     uint8_t effect_chance;  // Secondary effect chance (e.g., 10 for 10% burn)
+    int8_t priority;        // Move priority (-6 to +5, default 0)
 };
 
 }  // namespace domain

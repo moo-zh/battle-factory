@@ -45,6 +45,10 @@ struct Pokemon {
     // Order: ATK, DEF, SPEED, SPATK, SPDEF, ACC, EVASION
     int8_t stat_stages[domain::NUM_BATTLE_STATS];
 
+    // Protection state
+    bool is_protected;      // Volatile flag: protected this turn (cleared each turn)
+    uint8_t protect_count;  // Consecutive successful Protect uses (for success rate calc)
+
     // TODO: Add volatile status (status2), abilities later
 };
 

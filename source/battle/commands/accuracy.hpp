@@ -16,12 +16,16 @@ namespace commands {
  * CONTRACT:
  * - Inputs: ctx.move->accuracy, ctx.attacker/defender accuracy/evasion stages
  * - Outputs: Sets ctx.move_failed if miss
- * - Does: Roll against accuracy formula
+ * - Does: Roll against accuracy formula, check protection
  * - Does NOT: Check type immunity (separate command)
  *
  * SIMPLIFIED VERSION (Pass 1):
  * - Always succeeds (no actual accuracy roll)
  * - TODO: Add real accuracy formula when implementing Thunder Wave
+ *
+ * PROTECTION CHECK (Phase 4):
+ * - If defender is protected, move fails (blocked by Protect)
+ * - Protection check happens AFTER normal accuracy
  */
 inline void AccuracyCheck(BattleContext& ctx) {
     if (ctx.move_failed)
@@ -33,6 +37,12 @@ inline void AccuracyCheck(BattleContext& ctx) {
     // - Apply accuracy/evasion stage modifiers
     // - Check against move's accuracy
     // - Set ctx.move_failed = true if miss
+
+    // Check if defender is protected (Protect blocks this move)
+    if (ctx.defender->is_protected) {
+        ctx.move_failed = true;
+        return;
+    }
 }
 
 }  // namespace commands

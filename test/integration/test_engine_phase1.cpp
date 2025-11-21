@@ -41,6 +41,10 @@ static Pokemon CreateCharmander() {
     p.sp_defense = 10;
     p.speed = 13;
     p.status1 = 0;
+
+    // Initialize protection state
+    p.is_protected = false;
+    p.protect_count = 0;
     p.is_fainted = false;
 
     // Initialize stat stages to 0 (neutral)
@@ -66,6 +70,10 @@ static Pokemon CreateBulbasaur() {
     p.sp_defense = 12;
     p.speed = 9;
     p.status1 = 0;
+
+    // Initialize protection state
+    p.is_protected = false;
+    p.protect_count = 0;
     p.is_fainted = false;
 
     // Initialize stat stages to 0 (neutral)

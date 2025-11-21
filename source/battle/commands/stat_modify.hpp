@@ -17,7 +17,7 @@ namespace commands {
  * CONTRACT:
  * - Inputs: ctx.attacker or ctx.defender (based on affects_user), stat, change amount
  * - Outputs: Modifies target->stat_stages[stat]
- * - Does: Clamps stat stage to -6..+6, checks if change occurred
+ * - Does: Clamps stat stage to -6..+6, checks if change occurred, respects protection
  * - Does NOT: Deal damage, check accuracy (already done)
  *
  * STAT STAGE SYSTEM:
@@ -30,6 +30,10 @@ namespace commands {
  * TARGETING:
  * - affects_user = false (default): Modifies defender (Growl, Tail Whip)
  * - affects_user = true: Modifies attacker (Swords Dance, Iron Defense)
+ *
+ * PROTECTION (Phase 4):
+ * - If targeting defender and defender is protected, move fails (blocked by Protect)
+ * - Self-targeting moves ignore protection (Swords Dance works even if user is protected)
  *
  * EDGE CASES:
  * - Already at -6: Cannot go lower, no change
@@ -50,6 +54,13 @@ inline void ModifyStatStage(BattleContext& ctx, domain::Stat stat, int8_t change
     // Guard: skip if move already failed
     if (ctx.move_failed)
         return;
+
+    // Check protection: if targeting opponent and they're protected, fail
+    // Self-targeting moves (affects_user = true) ignore protection
+    if (!affects_user && ctx.defender->is_protected) {
+        ctx.move_failed = true;
+        return;
+    }
 
     // Select target based on affects_user flag
     // This matches pokeemerald's MOVE_EFFECT_AFFECTS_USER flag behavior

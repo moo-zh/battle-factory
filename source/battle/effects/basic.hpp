@@ -446,6 +446,67 @@ inline void Effect_SpecialDefenseUp2(BattleContext& ctx) {
 }
 
 /**
+ * @brief Effect: PROTECT - Protection move with degrading success rate (e.g., Protect)
+ *
+ * This effect provides protection from most incoming attacks, with success rate degrading
+ * on consecutive uses. It:
+ * 1. Calculates success rate based on protect_count: 100% / (2^n)
+ * 2. Performs RNG check against success rate
+ * 3. If successful:
+ *    - Sets attacker->is_protected = true
+ *    - Increments protect_count
+ * 4. If failed:
+ *    - Sets move_failed = true
+ *    - Resets protect_count = 0
+ *
+ * This is the first **protection mechanic**, introducing the concept of blocking
+ * incoming attacks with a degrading success rate on consecutive uses.
+ *
+ * Success rate formula:
+ * - First use: 100% (2^0 = 1)
+ * - Second consecutive use: 50% (2^1 = 2)
+ * - Third consecutive use: 25% (2^2 = 4)
+ * - Fourth consecutive use: 12.5% (2^3 = 8)
+ *
+ * Key mechanics:
+ * - Self-targeting (attacker protects themselves, cannot miss)
+ * - No accuracy check needed
+ * - Sets is_protected flag (checked by other moves)
+ * - Counter increments on success, resets on failure
+ * - Protection is volatile (cleared each turn by Engine)
+ *
+ * Example moves:
+ * - Protect (0 power, 0 accuracy, Normal type, +4 priority)
+ * - Detect (0 power, 0 accuracy, Fighting type, +4 priority)
+ *
+ * Based on pokeemerald:
+ * - data/battle_scripts_1.s:BattleScript_EffectProtect
+ * - src/battle_script_commands.c:Cmd_protectaffects
+ * - gProtectStructs[battler].protected flag
+ */
+inline void Effect_Protect(BattleContext& ctx) {
+    // Calculate success rate: 100 / (2^protect_count)
+    // protect_count=0 → 100%, protect_count=1 → 50%, protect_count=2 → 25%, etc.
+    uint8_t denominator = 1 << ctx.attacker->protect_count;  // 2^protect_count
+    uint8_t success_rate = 100 / denominator;
+
+    // RNG check: random(100) < success_rate
+    uint8_t roll = random::Random(100);
+
+    if (roll < success_rate) {
+        // Success: Set protection and increment counter
+        ctx.attacker->is_protected = true;
+        ctx.attacker->protect_count++;
+        ctx.move_failed = false;
+    } else {
+        // Failure: Reset counter and mark move as failed
+        ctx.attacker->protect_count = 0;
+        ctx.attacker->is_protected = false;
+        ctx.move_failed = true;
+    }
+}
+
+/**
  * @brief Effect: MULTI_HIT - Multi-hit move that strikes 2-5 times (e.g., Fury Attack)
  *
  * This effect performs a damaging attack 2-5 times in a single turn. The number of hits

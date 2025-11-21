@@ -22,52 +22,55 @@ namespace battle {
  */
 static const domain::MoveData MOVE_DATABASE[] = {
     // Move::None
-    {domain::Move::None, domain::Type::Normal, 0, 0, 0, 0},
+    {domain::Move::None, domain::Type::Normal, 0, 0, 0, 0, 0},
 
     // Move::Tackle
-    {domain::Move::Tackle, domain::Type::Normal, 40, 100, 35, 0},
+    {domain::Move::Tackle, domain::Type::Normal, 40, 100, 35, 0, 0},
 
     // Move::Ember
-    {domain::Move::Ember, domain::Type::Fire, 40, 100, 25, 10},
+    {domain::Move::Ember, domain::Type::Fire, 40, 100, 25, 10, 0},
 
     // Move::ThunderWave
-    {domain::Move::ThunderWave, domain::Type::Electric, 0, 100, 20, 100},
+    {domain::Move::ThunderWave, domain::Type::Electric, 0, 100, 20, 100, 0},
 
     // Move::Growl
-    {domain::Move::Growl, domain::Type::Normal, 0, 100, 40, 0},
+    {domain::Move::Growl, domain::Type::Normal, 0, 100, 40, 0, 0},
 
     // Move::TailWhip
-    {domain::Move::TailWhip, domain::Type::Normal, 0, 100, 30, 0},
+    {domain::Move::TailWhip, domain::Type::Normal, 0, 100, 30, 0, 0},
 
     // Move::SwordsDance
-    {domain::Move::SwordsDance, domain::Type::Normal, 0, 0, 30, 0},
+    {domain::Move::SwordsDance, domain::Type::Normal, 0, 0, 30, 0, 0},
 
     // Move::DoubleEdge
-    {domain::Move::DoubleEdge, domain::Type::Normal, 120, 100, 15, 0},
+    {domain::Move::DoubleEdge, domain::Type::Normal, 120, 100, 15, 0, 0},
 
     // Move::GigaDrain
-    {domain::Move::GigaDrain, domain::Type::Grass, 60, 100, 5, 0},
+    {domain::Move::GigaDrain, domain::Type::Grass, 60, 100, 5, 0, 0},
 
     // Move::IronDefense
-    {domain::Move::IronDefense, domain::Type::Normal, 0, 0, 15, 0},
+    {domain::Move::IronDefense, domain::Type::Normal, 0, 0, 15, 0, 0},
 
     // Move::StringShot
-    {domain::Move::StringShot, domain::Type::Bug, 0, 95, 40, 0},
+    {domain::Move::StringShot, domain::Type::Bug, 0, 95, 40, 0, 0},
 
     // Move::Agility
-    {domain::Move::Agility, domain::Type::Psychic, 0, 0, 30, 0},
+    {domain::Move::Agility, domain::Type::Psychic, 0, 0, 30, 0, 0},
 
     // Move::TailGlow
-    {domain::Move::TailGlow, domain::Type::Bug, 0, 0, 20, 0},
+    {domain::Move::TailGlow, domain::Type::Bug, 0, 0, 20, 0, 0},
 
     // Move::FakeTears
-    {domain::Move::FakeTears, domain::Type::Dark, 0, 100, 20, 0},
+    {domain::Move::FakeTears, domain::Type::Dark, 0, 100, 20, 0, 0},
 
     // Move::Amnesia
-    {domain::Move::Amnesia, domain::Type::Psychic, 0, 0, 20, 0},
+    {domain::Move::Amnesia, domain::Type::Psychic, 0, 0, 20, 0, 0},
 
     // Move::FuryAttack
-    {domain::Move::FuryAttack, domain::Type::Normal, 15, 85, 20, 0},
+    {domain::Move::FuryAttack, domain::Type::Normal, 15, 85, 20, 0, 0},
+
+    // Move::Protect
+    {domain::Move::Protect, domain::Type::Normal, 0, 0, 10, 0, 4},
 };
 
 /**
@@ -98,6 +101,7 @@ static const EffectFunction EFFECT_DISPATCH[] = {
     effects::Effect_SpecialDefenseDown2,  // Move::FakeTears
     effects::Effect_SpecialDefenseUp2,    // Move::Amnesia
     effects::Effect_MultiHit,             // Move::FuryAttack
+    effects::Effect_Protect,              // Move::Protect
 };
 
 /**

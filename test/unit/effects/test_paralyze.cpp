@@ -15,107 +15,12 @@
 #include "../../../source/domain/move.hpp"
 #include "../../../source/domain/species.hpp"
 #include "../../../source/domain/status.hpp"
+// Include common test helpers
+#include "../test_helpers.hpp"
 
-// ============================================================================
-// TEST HELPERS
-// ============================================================================
+// Include real implementation headers
+#include "../../../source/battle/effects/basic.hpp"
 
-/**
- * @brief Create a Pokemon for testing with specified stats
- */
-static battle::state::Pokemon CreateTestPokemon(domain::Species species, domain::Type type1,
-                                                domain::Type type2, uint16_t hp, uint8_t atk,
-                                                uint8_t def, uint8_t spa, uint8_t spd,
-                                                uint8_t spe) {
-    battle::state::Pokemon p;
-    p.species = species;
-    p.type1 = type1;
-    p.type2 = type2;
-    p.level = 5;
-    p.attack = atk;
-    p.defense = def;
-    p.sp_attack = spa;
-    p.sp_defense = spd;
-    p.speed = spe;
-    p.max_hp = hp;
-    p.current_hp = hp;
-    p.is_fainted = false;
-    p.status1 = 0;  // No status
-
-    // Initialize stat stages to 0 (neutral)
-    for (int i = 0; i < 8; i++) {
-        p.stat_stages[i] = 0;
-    }
-
-    return p;
-}
-
-/**
- * @brief Create Pikachu with Gen III base stats
- * Base stats: 35 HP, 55 Atk, 40 Def, 50 SpA, 50 SpD, 90 Spe
- */
-static battle::state::Pokemon CreatePikachu() {
-    return CreateTestPokemon(domain::Species::Pikachu, domain::Type::Electric, domain::Type::None,
-                             35, 55, 40, 50, 50, 90);
-}
-
-/**
- * @brief Create Bulbasaur with Gen III base stats
- * Base stats: 45 HP, 49 Atk, 49 Def, 65 SpA, 65 SpD, 45 Spe
- */
-static battle::state::Pokemon CreateBulbasaur() {
-    return CreateTestPokemon(domain::Species::Bulbasaur, domain::Type::Grass, domain::Type::Poison,
-                             45, 49, 49, 65, 65, 45);
-}
-
-/*
- * @brief Create Geodude with Gen III base stats
- * Base stats: 40 HP, 80 Atk, 100 Def, 30 SpA, 30 SpD, 20 Spe
- *
- * Commented out until Ground-type immunity is implemented
- */
-/*
-static battle::state::Pokemon CreateGeodude() {
-    return CreateTestPokemon(domain::Species::Geodude, domain::Type::Rock, domain::Type::Ground,
-                             40, 80, 100, 30, 30, 20);
-}
-*/
-
-/**
- * @brief Create the Thunder Wave move data
- * Gen III: 0 power, 100 accuracy, Electric type
- */
-static domain::MoveData CreateThunderWave() {
-    domain::MoveData twave;
-    twave.move = domain::Move::ThunderWave;
-    twave.type = domain::Type::Electric;
-    twave.power = 0;
-    twave.accuracy = 100;
-    twave.pp = 20;
-    twave.effect_chance = 0;  // Not used for 100% effect moves
-    return twave;
-}
-
-/**
- * @brief Setup a battle context for testing
- */
-battle::BattleContext SetupContext(battle::state::Pokemon* attacker,
-                                   battle::state::Pokemon* defender, const domain::MoveData* move) {
-    battle::BattleContext ctx;
-    ctx.attacker = attacker;
-    ctx.defender = defender;
-    ctx.move = move;
-    ctx.move_failed = false;
-    ctx.damage_dealt = 0;
-    ctx.critical_hit = false;
-    ctx.effectiveness = 4;  // Default to 1x (neutral)
-    ctx.override_power = 0;
-    ctx.override_type = 0;
-    return ctx;
-}
-
-// ============================================================================
-// BASIC FUNCTIONALITY TESTS
 // ============================================================================
 
 TEST_CASE(Effect_Paralyze_AppliesParalysis) {
