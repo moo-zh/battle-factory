@@ -71,6 +71,9 @@ static const domain::MoveData MOVE_DATABASE[] = {
 
     // Move::Protect
     {domain::Move::Protect, domain::Type::Normal, 0, 0, 10, 0, 4},
+
+    // Move::SolarBeam
+    {domain::Move::SolarBeam, domain::Type::Grass, 120, 100, 10, 0, 0},
 };
 
 /**
@@ -102,6 +105,7 @@ static const EffectFunction EFFECT_DISPATCH[] = {
     effects::Effect_SpecialDefenseUp2,    // Move::Amnesia
     effects::Effect_MultiHit,             // Move::FuryAttack
     effects::Effect_Protect,              // Move::Protect
+    effects::Effect_SolarBeam,            // Move::SolarBeam
 };
 
 /**

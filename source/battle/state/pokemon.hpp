@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include "../../domain/move.hpp"
 #include "../../domain/species.hpp"
 #include "../../domain/stats.hpp"
 
@@ -48,6 +49,10 @@ struct Pokemon {
     // Protection state
     bool is_protected;      // Volatile flag: protected this turn (cleared each turn)
     uint8_t protect_count;  // Consecutive successful Protect uses (for success rate calc)
+
+    // Two-turn move state
+    bool is_charging;            // Volatile flag: currently charging a two-turn move
+    domain::Move charging_move;  // Which move is being charged (for move validation)
 
     // TODO: Add volatile status (status2), abilities later
 };

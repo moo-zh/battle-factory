@@ -55,6 +55,10 @@ inline battle::state::Pokemon CreateTestPokemon(domain::Species species, domain:
     p.is_protected = false;
     p.protect_count = 0;
 
+    // Initialize two-turn move state
+    p.is_charging = false;
+    p.charging_move = domain::Move::None;
+
     return p;
 }
 
@@ -358,6 +362,22 @@ inline domain::MoveData CreateProtect() {
     protect.effect_chance = 0;
     protect.priority = 4;  // +4 priority
     return protect;
+}
+
+/**
+ * @brief Create the Solar Beam move data
+ * Gen III: 120 power, 100 accuracy, Grass type, two-turn move
+ */
+inline domain::MoveData CreateSolarBeam() {
+    domain::MoveData sb;
+    sb.move = domain::Move::SolarBeam;
+    sb.type = domain::Type::Grass;
+    sb.power = 120;
+    sb.accuracy = 100;
+    sb.pp = 10;
+    sb.effect_chance = 0;
+    sb.priority = 0;
+    return sb;
 }
 
 // ============================================================================

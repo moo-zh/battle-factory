@@ -35,6 +35,10 @@ static Pokemon CreateCharmander() {
     p.is_protected = false;
     p.protect_count = 0;
 
+    // Initialize two-turn move state
+    p.is_charging = false;
+    p.charging_move = Move::None;
+
     // Initialize stat stages to 0 (neutral)
     for (int i = 0; i < 8; i++) {
         p.stat_stages[i] = 0;
@@ -62,6 +66,10 @@ static Pokemon CreateBulbasaur() {
     // Initialize protection state
     p.is_protected = false;
     p.protect_count = 0;
+
+    // Initialize two-turn move state
+    p.is_charging = false;
+    p.charging_move = Move::None;
 
     // Initialize stat stages to 0 (neutral)
     for (int i = 0; i < 8; i++) {

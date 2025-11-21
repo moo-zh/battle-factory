@@ -507,6 +507,73 @@ inline void Effect_Protect(BattleContext& ctx) {
 }
 
 /**
+ * @brief Effect: SOLAR_BEAM - Two-turn move (charges Turn 1, attacks Turn 2)
+ *
+ * This effect implements the two-turn charging mechanic. On the first turn, the Pokemon
+ * charges energy (no damage). On the second turn, the move executes with full power.
+ *
+ * Turn 1 (Charging):
+ * 1. Check if is_charging is false
+ * 2. If false: Begin charging
+ *    - Set is_charging = true
+ *    - Set charging_move = Move::SolarBeam
+ *    - No damage dealt
+ *
+ * Turn 2 (Attack):
+ * 1. Check if is_charging is true
+ * 2. If true: Execute attack
+ *    - Clear is_charging = false
+ *    - AccuracyCheck
+ *    - CalculateDamage
+ *    - ApplyDamage
+ *    - CheckFaint
+ *
+ * This is the **first two-turn move** implementation, establishing the pattern for:
+ * - Razor Wind, Sky Attack, Skull Bash (charge + attack)
+ * - Fly, Dig, Bounce (charge + semi-invulnerable)
+ *
+ * Key mechanics:
+ * - Turn 1: No damage, sets charging state
+ * - Turn 2: Full damage calculation (120 power)
+ * - Accuracy checked on Turn 2 only
+ * - If move misses, charging is still consumed
+ * - Future: Sunny Day skips charging (not implemented yet)
+ *
+ * Example moves:
+ * - Solar Beam (120 power, 100 accuracy, Grass type)
+ * - Razor Wind (80 power, 100 accuracy, Normal type, high crit)
+ * - Sky Attack (140 power, 90 accuracy, Flying type, flinch chance)
+ *
+ * Based on pokeemerald:
+ * - include/constants/battle_move_effects.h:155 (EFFECT_SOLAR_BEAM)
+ * - data/battle_scripts_1.s:1903-1918 (BattleScript_EffectSolarBeam)
+ * - data/battle_scripts_1.s:785-803 (Charging turn logic)
+ * - STATUS2_MULTIPLETURNS flag (bit 12)
+ */
+inline void Effect_SolarBeam(BattleContext& ctx) {
+    // Turn 1: Start charging
+    if (!ctx.attacker->is_charging) {
+        ctx.attacker->is_charging = true;
+        ctx.attacker->charging_move = domain::Move::SolarBeam;
+        ctx.move_failed = false;  // Move succeeded in starting
+        // No damage dealt on charging turn
+        return;
+    }
+
+    // Turn 2: Execute attack
+    ctx.attacker->is_charging = false;  // Clear charging flag
+
+    // Standard damage sequence
+    commands::AccuracyCheck(ctx);
+    if (ctx.move_failed)
+        return;
+
+    commands::CalculateDamage(ctx);
+    commands::ApplyDamage(ctx);
+    commands::CheckFaint(ctx);
+}
+
+/**
  * @brief Effect: MULTI_HIT - Multi-hit move that strikes 2-5 times (e.g., Fury Attack)
  *
  * This effect performs a damaging attack 2-5 times in a single turn. The number of hits

@@ -34,6 +34,7 @@ enum class Move : uint8_t {
     Amnesia,
     FuryAttack,
     Protect,
+    SolarBeam,
     // TODO: Add more moves as we implement them
 };
 
