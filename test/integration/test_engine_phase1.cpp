@@ -87,8 +87,8 @@ TEST_CASE(Engine_TackleVsTackle_BothPokemonTakeDamage) {
     engine.InitBattle(CreateCharmander(), CreateBulbasaur());
 
     // Both use Tackle (move_slot 0)
-    BattleAction player_action{ActionType::MOVE, Player::PLAYER, 0};
-    BattleAction enemy_action{ActionType::MOVE, Player::ENEMY, 0};
+    BattleAction player_action{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
+    BattleAction enemy_action{ActionType::MOVE, Player::ENEMY, 0, Move::Tackle};
 
     engine.ExecuteTurn(player_action, enemy_action);
 
@@ -104,7 +104,7 @@ TEST_CASE(Engine_TackleVsTackle_DamageIsReasonable) {
     BattleEngine engine;
     engine.InitBattle(CreateCharmander(), CreateBulbasaur());
 
-    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0};
+    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
     engine.ExecuteTurn(tackle, tackle);
 
     // Expected damage for level 5 Tackle: roughly 18-21 damage per hit
@@ -134,7 +134,7 @@ TEST_CASE(Engine_TackleVsTackle_PlayerGoesFirst) {
 
     engine.InitBattle(player, enemy);
 
-    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0};
+    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
     engine.ExecuteTurn(tackle, tackle);
 
     // Player attacked first, so enemy took damage
@@ -156,7 +156,7 @@ TEST_CASE(Engine_TackleVsTackle_BattleEndsOnFaint) {
 
     engine.InitBattle(player, enemy);
 
-    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0};
+    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
     engine.ExecuteTurn(tackle, tackle);
 
     // Battle should be over
@@ -177,7 +177,7 @@ TEST_CASE(Engine_IsBattleOver_FalseWhenBothAlive) {
     TEST_ASSERT(!engine.IsBattleOver(), "Battle should not be over at start");
 
     // Execute one turn
-    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0};
+    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
     engine.ExecuteTurn(tackle, tackle);
 
     // Both should still be alive (50 HP should survive one Tackle)
@@ -213,7 +213,7 @@ TEST_CASE(Engine_MultipleTurns_EventuallyOneFaints) {
     BattleEngine engine;
     engine.InitBattle(CreateCharmander(), CreateBulbasaur());
 
-    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0};
+    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
 
     // Execute up to 20 turns (should be enough to KO one Pokemon)
     int turns = 0;
@@ -245,11 +245,110 @@ TEST_CASE(Engine_BothAt1HP_PlayerWins) {
 
     engine.InitBattle(player, enemy);
 
-    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0};
+    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
     engine.ExecuteTurn(tackle, tackle);
 
     // Player goes first, KOs enemy, battle ends
     TEST_ASSERT(engine.IsBattleOver(), "Battle should be over");
     TEST_ASSERT(engine.GetEnemy().is_fainted, "Enemy should faint (hit first)");
     TEST_ASSERT(!engine.GetPlayer().is_fainted, "Player should survive (turn ended)");
+}
+
+// ============================================================================
+// PHASE 2 TESTS: Thunder Wave (Status-only move)
+// ============================================================================
+
+/**
+ * @brief Phase 2: Thunder Wave paralyzes enemy, enemy still attacks
+ */
+TEST_CASE(Engine_ThunderWaveVsTackle_BothExecute) {
+    BattleEngine engine;
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+
+    // Player uses Thunder Wave, enemy uses Tackle
+    BattleAction player_thunderwave{ActionType::MOVE, Player::PLAYER, 1, Move::ThunderWave};
+    BattleAction enemy_tackle{ActionType::MOVE, Player::ENEMY, 0, Move::Tackle};
+
+    engine.ExecuteTurn(player_thunderwave, enemy_tackle);
+
+    // Player should be paralyzed (no damage from Thunder Wave)
+    TEST_ASSERT(engine.GetPlayer().current_hp < 50, "Player should take damage from Tackle");
+
+    // Enemy should be paralyzed (from Thunder Wave)
+    TEST_ASSERT(engine.GetEnemy().status1 != 0, "Enemy should be paralyzed from Thunder Wave");
+
+    // Enemy HP should not change (Thunder Wave deals no damage)
+    TEST_ASSERT(engine.GetEnemy().current_hp == 50, "Thunder Wave should deal no damage");
+}
+
+/**
+ * @brief Phase 2: Status-only move doesn't end battle
+ */
+TEST_CASE(Engine_ThunderWave_DoesNotEndBattle) {
+    BattleEngine engine;
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+
+    // Both use Thunder Wave
+    BattleAction thunderwave{ActionType::MOVE, Player::PLAYER, 1, Move::ThunderWave};
+
+    engine.ExecuteTurn(thunderwave, thunderwave);
+
+    // Battle should not be over (no damage dealt)
+    TEST_ASSERT(!engine.IsBattleOver(), "Battle should not end from status moves");
+    TEST_ASSERT(engine.GetPlayer().current_hp == 50, "Player HP unchanged");
+    TEST_ASSERT(engine.GetEnemy().current_hp == 50, "Enemy HP unchanged");
+
+    // Both should be paralyzed
+    TEST_ASSERT(engine.GetPlayer().status1 != 0, "Player should be paralyzed");
+    TEST_ASSERT(engine.GetEnemy().status1 != 0, "Enemy should be paralyzed");
+}
+
+/**
+ * @brief Phase 2: Damage move followed by status move
+ */
+TEST_CASE(Engine_TackleFollowedByThunderWave) {
+    BattleEngine engine;
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+
+    // Turn 1: Both Tackle
+    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
+    engine.ExecuteTurn(tackle, tackle);
+
+    uint16_t player_hp_after_turn1 = engine.GetPlayer().current_hp;
+    uint16_t enemy_hp_after_turn1 = engine.GetEnemy().current_hp;
+
+    // Turn 2: Player uses Thunder Wave, enemy uses Tackle
+    BattleAction player_twave{ActionType::MOVE, Player::PLAYER, 1, Move::ThunderWave};
+    BattleAction enemy_tackle{ActionType::MOVE, Player::ENEMY, 0, Move::Tackle};
+    engine.ExecuteTurn(player_twave, enemy_tackle);
+
+    // Player should take more damage from second Tackle
+    TEST_ASSERT(engine.GetPlayer().current_hp < player_hp_after_turn1,
+                "Player should take damage from second Tackle");
+
+    // Enemy should not take damage from Thunder Wave
+    TEST_ASSERT(engine.GetEnemy().current_hp == enemy_hp_after_turn1,
+                "Enemy HP unchanged from Thunder Wave");
+
+    // Enemy should be paralyzed
+    TEST_ASSERT(engine.GetEnemy().status1 != 0, "Enemy should be paralyzed");
+}
+
+/**
+ * @brief Phase 2: Both moves supported (Tackle and Thunder Wave)
+ */
+TEST_CASE(Engine_Phase2_SupportsTwoMoves) {
+    BattleEngine engine;
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+
+    // Verify Tackle still works
+    BattleAction tackle{ActionType::MOVE, Player::PLAYER, 0, Move::Tackle};
+    engine.ExecuteTurn(tackle, tackle);
+    TEST_ASSERT(engine.GetEnemy().current_hp < 50, "Tackle should deal damage");
+
+    // Reset and verify Thunder Wave works
+    engine.InitBattle(CreateCharmander(), CreateBulbasaur());
+    BattleAction twave{ActionType::MOVE, Player::PLAYER, 1, Move::ThunderWave};
+    engine.ExecuteTurn(twave, twave);
+    TEST_ASSERT(engine.GetEnemy().status1 != 0, "Thunder Wave should paralyze");
 }

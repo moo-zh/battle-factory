@@ -47,6 +47,7 @@ struct BattleAction {
     ActionType type;
     Player player;
     uint8_t move_slot;  // Which move to use (0-3)
+    domain::Move move;  // Phase 2: Explicit move (TODO: lookup from move_slot)
 };
 
 /**

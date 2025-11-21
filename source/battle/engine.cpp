@@ -1,6 +1,6 @@
 /**
  * @file battle/engine.cpp
- * @brief Battle Engine implementation (Phase 1: Walking Skeleton)
+ * @brief Battle Engine implementation (Phase 2: Multi-effect support)
  */
 
 #include "engine.hpp"
@@ -10,19 +10,25 @@
 
 namespace battle {
 
-// Phase 1: Hardcoded move data for Tackle
+// Phase 2: Hardcoded move data for Tackle and Thunder Wave
 // TODO Phase 3: Replace with move database lookup
 static domain::MoveData GetMoveData_Hardcoded(domain::Move move) {
     domain::MoveData data;
     data.move = move;
 
-    // Hardcoded: only Tackle is supported in Phase 1
+    // Phase 2: Support Tackle (damage) and Thunder Wave (status-only)
     if (move == domain::Move::Tackle) {
         data.type = domain::Type::Normal;
         data.power = 40;
         data.accuracy = 100;
         data.pp = 35;
         data.effect_chance = 0;
+    } else if (move == domain::Move::ThunderWave) {
+        data.type = domain::Type::Electric;
+        data.power = 0;  // Status-only move
+        data.accuracy = 100;
+        data.pp = 20;
+        data.effect_chance = 100;  // Always paralyzes if it hits
     } else {
         // Unsupported move - return dummy data that will fail
         data.type = domain::Type::Normal;
@@ -43,12 +49,12 @@ void BattleEngine::InitBattle(const state::Pokemon& player_pokemon,
 
 void BattleEngine::ExecuteTurn(const BattleAction& player_action,
                                const BattleAction& enemy_action) {
-    // Phase 1: Hardcoded turn order - player always goes first
+    // Phase 2: Still hardcoded turn order - player always goes first
     // TODO Phase 4: Determine order based on speed and priority
 
     // Player attacks first
     if (player_action.type == ActionType::MOVE) {
-        ExecuteMove(player_, enemy_, domain::Move::Tackle);  // Hardcoded: only Tackle
+        ExecuteMove(player_, enemy_, player_action.move);  // Phase 2: Use move from action
     }
 
     // Check if battle is over after player's move
@@ -58,7 +64,7 @@ void BattleEngine::ExecuteTurn(const BattleAction& player_action,
 
     // Enemy attacks second
     if (enemy_action.type == ActionType::MOVE) {
-        ExecuteMove(enemy_, player_, domain::Move::Tackle);  // Hardcoded: only Tackle
+        ExecuteMove(enemy_, player_, enemy_action.move);  // Phase 2: Use move from action
     }
 }
 
@@ -88,13 +94,14 @@ void BattleEngine::ExecuteMove(state::Pokemon& attacker, state::Pokemon& defende
     ctx.override_power = 0;
     ctx.override_type = 0;
 
-    // Phase 1: Hardcoded dispatch - only Effect_Hit (Tackle)
-    // TODO Phase 2: Add Effect_Paralyze
+    // Phase 2: Hardcoded dispatch - Effect_Hit and Effect_Paralyze
     // TODO Phase 3: Replace with function pointer table
     if (move == domain::Move::Tackle) {
         effects::Effect_Hit(ctx);
+    } else if (move == domain::Move::ThunderWave) {
+        effects::Effect_Paralyze(ctx);
     } else {
-        // Unsupported move in Phase 1 - fail silently
+        // Unsupported move in Phase 2 - fail silently
         ctx.move_failed = true;
     }
 }
