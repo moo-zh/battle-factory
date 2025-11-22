@@ -3,18 +3,18 @@
  * @brief Tests for Effect_AttackDown (Growl)
  */
 
-#include "../../../source/battle/effects/basic.hpp"
-#include "../../../source/battle/state/pokemon.hpp"
-#include "../../../source/domain/move.hpp"
-#include "../../../source/domain/species.hpp"
-#include "../../../source/domain/stats.hpp"
+#include "../../../src/battle/effects/basic.hpp"
+#include "../../../src/battle/state/pokemon.hpp"
+#include "../../../src/domain/move.hpp"
+#include "../../../src/domain/species.hpp"
+#include "../../../src/domain/stats.hpp"
 #include "framework.hpp"
 
 // Include common test helpers
 #include "../test_helpers.hpp"
 
 // Include real implementation headers
-#include "../../../source/battle/effects/basic.hpp"
+#include "../../../src/battle/effects/basic.hpp"
 TEST_CASE(Effect_AttackDown_LowersAttackStage) {
     auto attacker = CreateCharmander();
     auto defender = CreateBulbasaur();

@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include "../../source/battle/context.hpp"
-#include "../../source/battle/effects/basic.hpp"
-#include "../../source/battle/state/pokemon.hpp"
-#include "../../source/domain/move.hpp"
-#include "../../source/domain/species.hpp"
-#include "../../source/domain/stats.hpp"
+#include "../../src/battle/context.hpp"
+#include "../../src/battle/effects/basic.hpp"
+#include "../../src/battle/state/pokemon.hpp"
+#include "../../src/domain/move.hpp"
+#include "../../src/domain/species.hpp"
+#include "../../src/domain/stats.hpp"
 
 // Bring domain enums and battle types into scope for convenience in tests
 using namespace domain;

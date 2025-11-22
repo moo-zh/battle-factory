@@ -14,7 +14,7 @@
 #include "../test_helpers.hpp"
 
 // Include real implementation headers
-#include "../../../source/battle/effects/basic.hpp"
+#include "../../../src/battle/effects/basic.hpp"
 
 // ============================================================================
 // BASIC PROTECTION TESTS

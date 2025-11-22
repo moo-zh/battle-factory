@@ -175,11 +175,13 @@ void BattleEngine::InitBattle(const state::Pokemon& player_pokemon,
 /**
  * @brief Calculate effective speed for turn order
  * @param pokemon The Pokemon whose speed to calculate
- * @return Effective speed (base speed * stat stage multiplier)
+ * @return Effective speed (base speed * stat stage multiplier * status modifier)
  *
  * Based on pokeemerald's GetWhoStrikesFirst function.
  * Formula: speed * (2 + stage) / 2  if stage >= 0
  *          speed * 2 / (2 - stage)  if stage < 0
+ *
+ * Then apply status modifiers (paralysis divides by 4).
  */
 static uint16_t CalculateEffectiveSpeed(const state::Pokemon& pokemon) {
     uint16_t speed = pokemon.speed;
@@ -192,14 +194,47 @@ static uint16_t CalculateEffectiveSpeed(const state::Pokemon& pokemon) {
         speed = (speed * 2) / (2 - stage);
     }
 
-    // Phase 4: No paralysis, weather, abilities, or items yet
+    // Apply paralysis speed reduction (75% reduction = divide by 4)
+    // Based on pokeemerald: if (status1 & STATUS1_PARALYSIS) speed /= 4
+    if (pokemon.status1 & domain::Status1::PARALYSIS) {
+        speed /= 4;
+    }
+
     // Future phases will add:
-    // - Paralysis (speed /= 4)
-    // - Swift Swim/Chlorophyll (speed *= 2)
+    // - Swift Swim/Chlorophyll (speed *= 2 in weather)
     // - Quick Claw (speed = UINT16_MAX)
     // - Macho Brace (speed /= 2)
 
     return speed;
+}
+
+/**
+ * @brief Check if a Pokemon can act this turn (not prevented by status)
+ * @param pokemon The Pokemon to check
+ * @return true if Pokemon can act, false if prevented by status
+ *
+ * Checks for status conditions that prevent action:
+ * - Paralysis: 25% chance to be fully paralyzed and unable to move
+ * - Freeze: Cannot move (20% chance to thaw - not implemented yet)
+ * - Sleep: Cannot move (counts down - not implemented yet)
+ *
+ * Based on pokeemerald's CheckMoveLimitations function.
+ */
+static bool CanActThisTurn(const state::Pokemon& pokemon) {
+    // Check paralysis - 25% chance to be fully paralyzed
+    // Based on pokeemerald: if (gBattleMons[battler].status1 & STATUS1_PARALYSIS)
+    //                       if (Random() % 100 < 25) // fully paralyzed
+    if (pokemon.status1 & domain::Status1::PARALYSIS) {
+        if (random::Random(100) < 25) {
+            // TODO: Display message: "[Pokemon] is paralyzed! It can't move!"
+            return false;
+        }
+    }
+
+    // TODO: Check freeze status (cannot move, 20% thaw chance)
+    // TODO: Check sleep status (cannot move, counts down each turn)
+
+    return true;  // Can act normally
 }
 
 /**
@@ -256,7 +291,10 @@ void BattleEngine::ExecuteTurn(const BattleAction& player_action,
     if (player_goes_first) {
         // Player attacks first
         if (player_action.type == ActionType::MOVE) {
-            ExecuteMove(player_, enemy_, player_action.move);
+            // Check if player can act (not prevented by paralysis/freeze/sleep)
+            if (CanActThisTurn(player_)) {
+                ExecuteMove(player_, enemy_, player_action.move);
+            }
         }
 
         // Check if battle is over after player's move
@@ -266,12 +304,18 @@ void BattleEngine::ExecuteTurn(const BattleAction& player_action,
 
         // Enemy attacks second
         if (enemy_action.type == ActionType::MOVE) {
-            ExecuteMove(enemy_, player_, enemy_action.move);
+            // Check if enemy can act
+            if (CanActThisTurn(enemy_)) {
+                ExecuteMove(enemy_, player_, enemy_action.move);
+            }
         }
     } else {
         // Enemy attacks first
         if (enemy_action.type == ActionType::MOVE) {
-            ExecuteMove(enemy_, player_, enemy_action.move);
+            // Check if enemy can act
+            if (CanActThisTurn(enemy_)) {
+                ExecuteMove(enemy_, player_, enemy_action.move);
+            }
         }
 
         // Check if battle is over after enemy's move
@@ -281,7 +325,10 @@ void BattleEngine::ExecuteTurn(const BattleAction& player_action,
 
         // Player attacks second
         if (player_action.type == ActionType::MOVE) {
-            ExecuteMove(player_, enemy_, player_action.move);
+            // Check if player can act
+            if (CanActThisTurn(player_)) {
+                ExecuteMove(player_, enemy_, player_action.move);
+            }
         }
     }
 }

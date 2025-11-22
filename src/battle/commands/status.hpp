@@ -75,12 +75,12 @@ inline void TryApplyBurn(BattleContext& ctx, uint8_t chance) {
  * - Does: Check immunities, roll RNG, apply paralysis
  * - Does NOT: Deal damage, check accuracy (already done)
  *
- * IMMUNITIES CHECKED (Phase 1):
+ * IMMUNITIES CHECKED:
+ * - Electric type (immune to paralysis from Electric-type moves like Thunder Wave)
  * - Already has a status (status1 != 0)
  * - Target fainted (current_hp == 0)
  *
  * NOT YET IMPLEMENTED (future passes):
- * - Ground type immunity (for Electric-type moves like Thunder Wave)
  * - Limber ability
  * - Safeguard field effect
  * - Substitute (blocks paralysis in Gen III, unlike burn)
@@ -97,12 +97,22 @@ inline void TryApplyParalysis(BattleContext& ctx, uint8_t chance) {
     if (ctx.defender->current_hp == 0)
         return;
 
+    // Check Electric type immunity
+    // In Gen III, Electric types cannot be paralyzed by Electric-type moves
+    // Note: Body Slam (Normal-type) CAN paralyze Electric types
+    if (ctx.move->type == domain::Type::Electric) {
+        if (ctx.defender->type1 == domain::Type::Electric ||
+            ctx.defender->type2 == domain::Type::Electric) {
+            // TODO: Display message: "It doesn't affect [Pokemon]..."
+            return;
+        }
+    }
+
     // Already has a status condition (Sleep, Poison, Burn, etc.)
     if (ctx.defender->status1 != 0) {
         return;
     }
 
-    // TODO (future): Check Ground type immunity for Electric-type moves
     // TODO (future): Check Limber ability
     // TODO (future): Check Safeguard on defender's side
 
