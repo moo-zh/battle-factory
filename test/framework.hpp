@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <ti/getcsc.h>
 
+#include "../src/battle/random.hpp"
+
 /**
  * @namespace test
  * @brief Test framework namespace containing all testing utilities.
@@ -361,6 +363,9 @@ inline void runTest(TestRegistration* reg) {
  * @brief Run all registered tests in declaration order.
  */
 inline void runAllTests() {
+    // Initialize RNG with fixed seed for deterministic tests
+    battle::random::Initialize(0x12345678);
+
     TestRegistration* current = g_test_head;
 
     // Debug: check if any tests registered
