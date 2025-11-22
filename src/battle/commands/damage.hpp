@@ -6,18 +6,19 @@
 #pragma once
 
 #include "../../domain/stats.hpp"
+#include "../../domain/status.hpp"
 #include "../context.hpp"
 
 namespace battle {
 namespace commands {
 
 /**
- * @brief Get a stat value with stat stage multiplier applied
+ * @brief Get a stat value with stat stage multiplier and status modifiers applied
  *
  * CONTRACT:
- * - Inputs: Pokemon with base stats and stat_stages
+ * - Inputs: Pokemon with base stats, stat_stages, and status1
  * - Outputs: Returns modified stat value
- * - Does: Apply stage multiplier to base stat
+ * - Does: Apply stage multiplier to base stat, then status modifiers
  *
  * STAT STAGE MULTIPLIERS:
  * - If stage >= 0: multiplier = (2 + stage) / 2
@@ -30,11 +31,15 @@ namespace commands {
  * - Stage +1: 3/2 = 1.50x (150%)
  * - Stage +6: 8/2 = 4.00x (400%)
  *
- * Based on pokeemerald damage calculation with stat stages
+ * STATUS MODIFIERS (applied AFTER stat stages):
+ * - Burn: Attack / 2 (50% reduction)
+ * - Paralysis: Speed / 4 (handled in CalculateEffectiveSpeed, not here)
+ *
+ * Based on pokeemerald damage calculation with stat stages and status effects
  *
  * @param p Pokemon to get stat from
  * @param stat Which stat to retrieve (STAT_ATK, STAT_DEF, etc.)
- * @return Modified stat value with stage multiplier applied
+ * @return Modified stat value with stage multiplier and status modifiers applied
  */
 inline int GetModifiedStat(const state::Pokemon& p, domain::Stat stat) {
     int base_stat = 0;
@@ -63,13 +68,26 @@ inline int GetModifiedStat(const state::Pokemon& p, domain::Stat stat) {
     int8_t stage = p.stat_stages[stat];
 
     // Apply stage multiplier
+    int modified_stat;
     if (stage >= 0) {
         // Positive or neutral: (2 + stage) / 2
-        return (base_stat * (2 + stage)) / 2;
+        modified_stat = (base_stat * (2 + stage)) / 2;
     } else {
         // Negative: 2 / (2 - stage)
-        return (base_stat * 2) / (2 - stage);
+        modified_stat = (base_stat * 2) / (2 - stage);
     }
+
+    // Apply status modifiers AFTER stat stages
+    // Burn: Attack reduced by 50% (divide by 2)
+    // Based on pokeemerald: if (status1 & STATUS1_BURN && stat == STAT_ATK)
+    if (stat == domain::STAT_ATK && (p.status1 & domain::Status1::BURN)) {
+        modified_stat /= 2;
+    }
+
+    // Future: Paralysis speed reduction is handled in CalculateEffectiveSpeed
+    // (not here, because it's only for turn order, not damage calculation)
+
+    return modified_stat;
 }
 
 /**

@@ -117,6 +117,24 @@ class BattleEngine {
      */
     void ExecuteMove(state::Pokemon& attacker, state::Pokemon& defender, domain::Move move);
 
+    /**
+     * @brief Process end-of-turn effects
+     *
+     * Handles effects that trigger at the end of each turn:
+     * - Status damage (Burn: 1/8 max HP, Poison: 1/8 max HP, Toxic: increasing)
+     * - Weather damage (Sandstorm, Hail: 1/16 max HP)
+     * - Leech Seed drain
+     * - Future Sight delayed damage
+     * - Weather/screen duration counters
+     *
+     * Based on pokeemerald's BattleTurnIncrementTurnCounter and status damage handlers
+     *
+     * Current implementation:
+     * - Burn damage (1/8 max HP per turn)
+     * - TODO: Poison, Toxic, weather damage, etc.
+     */
+    void EndOfTurn();
+
     // Battle state
     state::Pokemon player_;
     state::Pokemon enemy_;

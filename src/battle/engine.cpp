@@ -333,6 +333,12 @@ void BattleEngine::ExecuteTurn(const BattleAction& player_action,
             }
         }
     }
+
+    // End-of-turn processing (status damage, weather, etc.)
+    // Only process if battle isn't already over
+    if (!IsBattleOver()) {
+        EndOfTurn();
+    }
 }
 
 bool BattleEngine::IsBattleOver() const {
@@ -370,6 +376,55 @@ void BattleEngine::ExecuteMove(state::Pokemon& attacker, state::Pokemon& defende
         // Move not implemented - fail silently
         ctx.move_failed = true;
     }
+}
+
+void BattleEngine::EndOfTurn() {
+    // Process status damage for player
+    if (player_.status1 & domain::Status1::BURN) {
+        // Burn damage: 1/8 max HP per turn
+        // Based on pokeemerald: damage = pokemon->maxHP / 8
+        // If max HP < 8, damage is 0 (integer division rounds down)
+        uint16_t burn_damage = player_.max_hp / 8;
+
+        // Apply damage only if > 0, clamping at 0
+        if (burn_damage > 0) {
+            if (burn_damage >= player_.current_hp) {
+                player_.current_hp = 0;
+                player_.is_fainted = true;
+            } else {
+                player_.current_hp -= burn_damage;
+            }
+        }
+
+        // TODO: Display message: "[Pokemon] was hurt by its burn!"
+    }
+
+    // Process status damage for enemy
+    if (enemy_.status1 & domain::Status1::BURN) {
+        // Burn damage: 1/8 max HP per turn
+        // If max HP < 8, damage is 0 (integer division rounds down)
+        uint16_t burn_damage = enemy_.max_hp / 8;
+
+        // Apply damage only if > 0, clamping at 0
+        if (burn_damage > 0) {
+            if (burn_damage >= enemy_.current_hp) {
+                enemy_.current_hp = 0;
+                enemy_.is_fainted = true;
+            } else {
+                enemy_.current_hp -= burn_damage;
+            }
+        }
+
+        // TODO: Display message: "[Pokemon] was hurt by its burn!"
+    }
+
+    // TODO: Add poison damage (1/8 max HP)
+    // TODO: Add toxic damage (increasing: turn/16 * max HP)
+    // TODO: Add weather damage (sandstorm, hail: 1/16 max HP)
+    // TODO: Add Leech Seed drain
+    // TODO: Decrement weather counters
+    // TODO: Decrement screen counters (Light Screen, Reflect)
+    // TODO: Check for Future Sight delayed damage
 }
 
 }  // namespace battle
