@@ -574,6 +574,77 @@ inline void Effect_SolarBeam(BattleContext& ctx) {
 }
 
 /**
+ * @brief Effect: SEMI_INVULNERABLE - Two-turn semi-invulnerable move (e.g., Fly)
+ *
+ * This effect implements the semi-invulnerable two-turn move mechanic. On Turn 1, the user
+ * enters a semi-invulnerable state (airborne, underground, or underwater), consuming PP.
+ * On Turn 2, the user attacks with normal damage calculation.
+ *
+ * **Key difference from Solar Beam:** While charging, the user is SEMI-INVULNERABLE and
+ * cannot be targeted by most moves. Only specific moves can hit semi-invulnerable targets
+ * (e.g., Gust/Thunder vs Fly, Earthquake vs Dig).
+ *
+ * This effect handles:
+ * 1. Turn 1: Enter semi-invulnerable state
+ *    - Set is_charging = true
+ *    - Set is_semi_invulnerable = true
+ *    - Set semi_invulnerable_type based on move (OnAir for Fly)
+ *    - No damage dealt, return early
+ * 2. Turn 2: Attack from semi-invulnerable state
+ *    - Clear is_charging, is_semi_invulnerable, semi_invulnerable_type
+ *    - Standard damage sequence (AccuracyCheck → CalculateDamage → ApplyDamage → CheckFaint)
+ *
+ * Semi-invulnerable types:
+ * - OnAir: Fly, Bounce (can be hit by Gust, Thunder, Sky Uppercut, etc.)
+ * - Underground: Dig (can be hit by Earthquake, Magnitude)
+ * - Underwater: Dive (can be hit by Surf, Whirlpool)
+ *
+ * Example moves:
+ * - Fly (70 power, 95 accuracy, Flying type, OnAir)
+ * - Dig (80 power, 100 accuracy, Ground type, Underground)
+ * - Dive (80 power, 100 accuracy, Water type, Underwater)
+ * - Bounce (85 power, 85 accuracy, Flying type, OnAir)
+ *
+ * Based on pokeemerald:
+ * - include/constants/battle_move_effects.h:159 (EFFECT_SEMI_INVULNERABLE)
+ * - data/battle_scripts_1.s:1973-2003 (BattleScript_EffectSemiInvulnerable)
+ * - src/battle_script_commands.c:9009-9026 (Cmd_setsemiinvulnerablebit)
+ * - STATUS2_MULTIPLETURNS flag (bit 12, shared with Solar Beam)
+ * - STATUS3_ON_AIR flag (bit 6)
+ * - STATUS3_UNDERGROUND flag (bit 7)
+ * - STATUS3_UNDERWATER (for Dive)
+ *
+ * Note: AccuracyCheck modifications for bypassing semi-invulnerable state are deferred
+ * until we implement moves that can hit airborne/underground/underwater targets.
+ */
+inline void Effect_Fly(BattleContext& ctx) {
+    // Turn 1: Fly up into the air (become semi-invulnerable)
+    if (!ctx.attacker->is_charging) {
+        ctx.attacker->is_charging = true;
+        ctx.attacker->charging_move = domain::Move::Fly;
+        ctx.attacker->is_semi_invulnerable = true;
+        ctx.attacker->semi_invulnerable_type = state::SemiInvulnerableType::OnAir;
+        ctx.move_failed = false;  // Move succeeded in starting
+        // No damage dealt on fly-up turn
+        return;
+    }
+
+    // Turn 2: Attack from the air (clear semi-invulnerable state)
+    ctx.attacker->is_charging = false;           // Clear charging flag
+    ctx.attacker->is_semi_invulnerable = false;  // Clear semi-invulnerable flag
+    ctx.attacker->semi_invulnerable_type = state::SemiInvulnerableType::None;
+
+    // Standard damage sequence
+    commands::AccuracyCheck(ctx);
+    if (ctx.move_failed)
+        return;
+
+    commands::CalculateDamage(ctx);
+    commands::ApplyDamage(ctx);
+    commands::CheckFaint(ctx);
+}
+
+/**
  * @brief Effect: MULTI_HIT - Multi-hit move that strikes 2-5 times (e.g., Fury Attack)
  *
  * This effect performs a damaging attack 2-5 times in a single turn. The number of hits

@@ -18,6 +18,22 @@ namespace battle {
 namespace state {
 
 /**
+ * @brief Semi-invulnerable state type
+ *
+ * Indicates which type of semi-invulnerable state a Pokemon is in.
+ * Different moves grant different semi-invulnerable states:
+ * - OnAir: Fly, Bounce (can be hit by Gust, Thunder, etc.)
+ * - Underground: Dig (can be hit by Earthquake, Magnitude)
+ * - Underwater: Dive (can be hit by Surf, Whirlpool)
+ */
+enum class SemiInvulnerableType : uint8_t {
+    None = 0,
+    OnAir,        // Fly, Bounce
+    Underground,  // Dig
+    Underwater    // Dive
+};
+
+/**
  * @brief Runtime Pokemon state during battle
  */
 struct Pokemon {
@@ -53,6 +69,10 @@ struct Pokemon {
     // Two-turn move state
     bool is_charging;            // Volatile flag: currently charging a two-turn move
     domain::Move charging_move;  // Which move is being charged (for move validation)
+
+    // Semi-invulnerable state (Fly, Dig, Dive, Bounce)
+    bool is_semi_invulnerable;                    // Volatile flag: currently semi-invulnerable
+    SemiInvulnerableType semi_invulnerable_type;  // Which type (OnAir, Underground, Underwater)
 
     // TODO: Add volatile status (status2), abilities later
 };

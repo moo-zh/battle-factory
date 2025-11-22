@@ -59,6 +59,10 @@ inline battle::state::Pokemon CreateTestPokemon(domain::Species species, domain:
     p.is_charging = false;
     p.charging_move = domain::Move::None;
 
+    // Initialize semi-invulnerable state
+    p.is_semi_invulnerable = false;
+    p.semi_invulnerable_type = battle::state::SemiInvulnerableType::None;
+
     return p;
 }
 
@@ -102,6 +106,20 @@ inline battle::state::Pokemon CreatePikachu() {
                              50,   // Sp. Attack
                              40,   // Sp. Defense
                              90);  // Speed
+}
+
+/**
+ * @brief Create Pidgey with Gen III base stats
+ * Base stats: 40 HP, 45 Atk, 40 Def, 35 SpA, 35 SpD, 56 Spe
+ */
+inline battle::state::Pokemon CreatePidgey() {
+    return CreateTestPokemon(domain::Species::Pidgey, domain::Type::Normal, domain::Type::Flying,
+                             40,   // HP
+                             45,   // Attack
+                             40,   // Defense
+                             35,   // Sp. Attack
+                             35,   // Sp. Defense
+                             56);  // Speed
 }
 
 // ============================================================================
@@ -378,6 +396,22 @@ inline domain::MoveData CreateSolarBeam() {
     sb.effect_chance = 0;
     sb.priority = 0;
     return sb;
+}
+
+/**
+ * @brief Create the Fly move data
+ * Gen III: 70 power, 95 accuracy, Flying type, two-turn semi-invulnerable move
+ */
+inline domain::MoveData CreateFly() {
+    domain::MoveData fly;
+    fly.move = domain::Move::Fly;
+    fly.type = domain::Type::Flying;
+    fly.power = 70;
+    fly.accuracy = 95;
+    fly.pp = 15;
+    fly.effect_chance = 0;
+    fly.priority = 0;
+    return fly;
 }
 
 // ============================================================================

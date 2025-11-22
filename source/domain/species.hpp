@@ -26,6 +26,7 @@ enum class Type : uint8_t {
     Rock,
     Ground,
     Bug,
+    Flying,
     Psychic,
     Dark,
     // TODO: Add remaining types as needed
@@ -39,6 +40,7 @@ enum class Species : uint8_t {
     Charmander,
     Bulbasaur,
     Pikachu,
+    Pidgey,
     Geodude,
     // TODO: Add more species as we implement more moves
 };

@@ -19,7 +19,7 @@ Battle Factory is a faithful Gen III Pokémon battle engine that runs on the TI-
 
 ### Current Status
 
-**✅ 9/12 Moves Implemented** (75% of concept ladder)
+**✅ 10/12 Moves Implemented** (83% of concept ladder)
 
 | Move | Type | Concept Introduced |
 |------|------|-------------------|
@@ -32,11 +32,11 @@ Battle Factory is a faithful Gen III Pokémon battle engine that runs on the TI-
 | ✅ Giga Drain | Grass | Drain HP |
 | ✅ Protect | Normal | Protection mechanics |
 | ✅ Solar Beam | Grass | Two-turn moves |
-| ⬜ Fly | Flying | Semi-invulnerable |
+| ✅ Fly | Flying | Semi-invulnerable |
 | ⬜ Substitute | Normal | Substitute mechanics |
 | ⬜ Baton Pass | Normal | Stat transfer on switch |
 
-**Test Coverage:** 376/376 tests passing
+**Test Coverage:** 414/414 tests passing
 
 ---
 
