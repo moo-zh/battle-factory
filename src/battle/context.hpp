@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include "../domain/move.hpp"
+#include "state/field.hpp"
 #include "state/pokemon.hpp"
 
 namespace battle {
@@ -25,6 +26,7 @@ struct BattleContext {
     // === PROVIDED BY ENGINE (read-only to effects) ===
     state::Pokemon* attacker;
     state::Pokemon* defender;
+    state::Field* field;
     const domain::MoveData* move;
 
     // === EXECUTION STATE (modified by commands) ===

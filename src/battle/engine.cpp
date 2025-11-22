@@ -85,6 +85,9 @@ static const domain::MoveData MOVE_DATABASE[] = {
 
     // Move::BatonPass
     {domain::Move::BatonPass, domain::Type::Normal, 0, 0, 40, 0, 0},
+
+    // Move::Sandstorm
+    {domain::Move::Sandstorm, domain::Type::Rock, 0, 0, 10, 0, 0},
 };
 
 /**
@@ -120,6 +123,7 @@ static const EffectFunction EFFECT_DISPATCH[] = {
     effects::Effect_Fly,                  // Move::Fly
     effects::Effect_Substitute,           // Move::Substitute
     effects::Effect_BatonPass,            // Move::BatonPass
+    effects::Effect_Sandstorm,            // Move::Sandstorm
 };
 
 /**
@@ -172,6 +176,10 @@ void BattleEngine::InitBattle(const state::Pokemon& player_pokemon,
                               const state::Pokemon& enemy_pokemon) {
     player_ = player_pokemon;
     enemy_ = enemy_pokemon;
+
+    // Initialize field state (clear weather)
+    field_.weather = domain::Weather::None;
+    field_.weather_duration = 0;
 }
 
 /**
@@ -351,6 +359,7 @@ void BattleEngine::ExecuteMove(state::Pokemon& attacker, state::Pokemon& defende
     BattleContext ctx;
     ctx.attacker = &attacker;
     ctx.defender = &defender;
+    ctx.field = &field_;
 
     // Get move data from database (Phase 3: table lookup)
     const domain::MoveData& move_data = GetMoveData(move);
@@ -420,9 +429,74 @@ void BattleEngine::EndOfTurn() {
 
     // TODO: Add poison damage (1/8 max HP)
     // TODO: Add toxic damage (increasing: turn/16 * max HP)
-    // TODO: Add weather damage (sandstorm, hail: 1/16 max HP)
     // TODO: Add Leech Seed drain
-    // TODO: Decrement weather counters
+
+    // Weather damage (Sandstorm, Hail: 1/16 max HP)
+    // Only applies if weather is active
+    if (field_.weather == domain::Weather::Sandstorm) {
+        // Sandstorm damages non-Rock/Ground/Steel types
+        // Process player
+        if (!player_.is_fainted) {
+            bool is_immune =
+                (player_.type1 == domain::Type::Rock || player_.type2 == domain::Type::Rock ||
+                 player_.type1 == domain::Type::Ground || player_.type2 == domain::Type::Ground ||
+                 player_.type1 == domain::Type::Steel || player_.type2 == domain::Type::Steel);
+
+            if (!is_immune) {
+                uint16_t weather_damage = player_.max_hp / 16;
+
+                // Apply damage only if > 0, clamping at 0
+                if (weather_damage > 0) {
+                    if (weather_damage >= player_.current_hp) {
+                        player_.current_hp = 0;
+                        player_.is_fainted = true;
+                    } else {
+                        player_.current_hp -= weather_damage;
+                    }
+                }
+
+                // TODO: Display message: "[Pokemon] is buffeted by the sandstorm!"
+            }
+        }
+
+        // Process enemy
+        if (!enemy_.is_fainted) {
+            bool is_immune =
+                (enemy_.type1 == domain::Type::Rock || enemy_.type2 == domain::Type::Rock ||
+                 enemy_.type1 == domain::Type::Ground || enemy_.type2 == domain::Type::Ground ||
+                 enemy_.type1 == domain::Type::Steel || enemy_.type2 == domain::Type::Steel);
+
+            if (!is_immune) {
+                uint16_t weather_damage = enemy_.max_hp / 16;
+
+                // Apply damage only if > 0, clamping at 0
+                if (weather_damage > 0) {
+                    if (weather_damage >= enemy_.current_hp) {
+                        enemy_.current_hp = 0;
+                        enemy_.is_fainted = true;
+                    } else {
+                        enemy_.current_hp -= weather_damage;
+                    }
+                }
+
+                // TODO: Display message: "[Pokemon] is buffeted by the sandstorm!"
+            }
+        }
+    }
+
+    // TODO: Hail weather damage (same pattern, checks for Ice type immunity)
+
+    // Decrement weather duration
+    if (field_.weather_duration > 0) {
+        field_.weather_duration--;
+
+        // Clear weather when duration reaches 0
+        if (field_.weather_duration == 0) {
+            field_.weather = domain::Weather::None;
+            // TODO: Display message: "The sandstorm subsided."
+        }
+    }
+
     // TODO: Decrement screen counters (Light Screen, Reflect)
     // TODO: Check for Future Sight delayed damage
 }

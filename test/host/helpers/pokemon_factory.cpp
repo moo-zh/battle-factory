@@ -90,6 +90,36 @@ battle::state::Pokemon CreatePidgey() {
                              56);  // Speed
 }
 
+battle::state::Pokemon CreateGeodude() {
+    return CreateTestPokemon(domain::Species::Geodude, domain::Type::Rock, domain::Type::Ground,
+                             40,   // HP
+                             80,   // Attack
+                             100,  // Defense
+                             30,   // Sp. Attack
+                             30,   // Sp. Defense
+                             20);  // Speed
+}
+
+battle::state::Pokemon CreateSandshrew() {
+    return CreateTestPokemon(domain::Species::Sandshrew, domain::Type::Ground, domain::Type::None,
+                             50,   // HP
+                             75,   // Attack
+                             85,   // Defense
+                             20,   // Sp. Attack
+                             30,   // Sp. Defense
+                             40);  // Speed
+}
+
+battle::state::Pokemon CreateSkarmory() {
+    return CreateTestPokemon(domain::Species::Skarmory, domain::Type::Steel, domain::Type::Flying,
+                             65,   // HP
+                             80,   // Attack
+                             140,  // Defense
+                             40,   // Sp. Attack
+                             70,   // Sp. Defense
+                             70);  // Speed
+}
+
 battle::state::Pokemon CreatePokemonWithStats(uint8_t atk, uint8_t def, uint8_t spe, uint16_t hp) {
     return CreateTestPokemon(domain::Species::None, domain::Type::Normal, domain::Type::None, hp,
                              atk, def,

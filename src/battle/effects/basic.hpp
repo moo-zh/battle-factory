@@ -13,6 +13,7 @@
 #include "../commands/recoil.hpp"
 #include "../commands/stat_modify.hpp"
 #include "../commands/status.hpp"
+#include "../commands/weather.hpp"
 #include "../context.hpp"
 #include "../random.hpp"
 
@@ -852,6 +853,46 @@ inline void Effect_MultiHit(BattleContext& ctx) {
 
     // Final faint check
     commands::CheckFaint(ctx);
+}
+
+/**
+ * @brief Effect: SANDSTORM - Summons a sandstorm for 5 turns
+ *
+ * Sets weather to Sandstorm, which:
+ * - Lasts 5 turns by default (8 with Smooth Rock held item - not implemented)
+ * - Deals 1/16 max HP damage to non-Rock/Ground/Steel types at end of turn
+ * - Boosts Rock-type Special Defense by 50% (Gen IV+ - not implemented)
+ *
+ * This is a **weather-setting move**, the first to introduce global field state.
+ * Weather affects end-of-turn processing and can modify damage calculations
+ * for certain move types.
+ *
+ * Key mechanics:
+ * - Replaces current weather (weather doesn't stack)
+ * - Duration counter decrements each turn
+ * - Weather ends when duration reaches 0
+ * - Can fail if Sandstorm is already active (not implemented - allows refresh)
+ *
+ * Type immunities (for damage):
+ * - Rock type: Immune
+ * - Ground type: Immune
+ * - Steel type: Immune
+ * - Sand Veil ability: Takes damage but gains evasion boost (ability not implemented)
+ *
+ * Example move:
+ * - Sandstorm (0 power, no accuracy check, Rock type, 10 PP) - pokeemerald ID 201
+ *
+ * Based on pokeemerald:
+ * - data/battle_scripts_1.s:BattleScript_EffectSandstorm
+ * - src/battle_weather.c:SetWeather
+ * - src/battle_script_commands.c:Cmd_setweather
+ */
+inline void Effect_Sandstorm(BattleContext& ctx) {
+    // Set sandstorm weather for 5 turns
+    commands::SetWeather(ctx, domain::Weather::Sandstorm, 5);
+
+    // TODO: Check if sandstorm is already active
+    // TODO: Display message: "A sandstorm kicked up!"
 }
 
 }  // namespace effects

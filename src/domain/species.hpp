@@ -49,6 +49,8 @@ enum class Species : uint8_t {
     Pikachu,
     Pidgey,
     Geodude,
+    Sandshrew,
+    Skarmory,
     // TODO: Add more species as we implement more moves
 };
 

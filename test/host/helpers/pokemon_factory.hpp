@@ -76,6 +76,36 @@ battle::state::Pokemon CreatePikachu();
 battle::state::Pokemon CreatePidgey();
 
 /**
+ * @brief Create Geodude with Gen III base stats
+ *
+ * Base stats: 40 HP, 80 Atk, 100 Def, 30 SpA, 30 SpD, 20 Spe
+ * Type: Rock/Ground
+ *
+ * @return Geodude at full HP with neutral stat stages
+ */
+battle::state::Pokemon CreateGeodude();
+
+/**
+ * @brief Create Sandshrew with Gen III base stats
+ *
+ * Base stats: 50 HP, 75 Atk, 85 Def, 20 SpA, 30 SpD, 40 Spe
+ * Type: Ground
+ *
+ * @return Sandshrew at full HP with neutral stat stages
+ */
+battle::state::Pokemon CreateSandshrew();
+
+/**
+ * @brief Create Skarmory with Gen III base stats
+ *
+ * Base stats: 65 HP, 80 Atk, 140 Def, 40 SpA, 70 SpD, 70 Spe
+ * Type: Steel/Flying
+ *
+ * @return Skarmory at full HP with neutral stat stages
+ */
+battle::state::Pokemon CreateSkarmory();
+
+/**
  * @brief Create a Pokemon with custom stats for edge case testing
  *
  * Creates a generic Pokemon (Species::None) with specified stats.

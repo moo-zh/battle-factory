@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "../domain/move.hpp"
+#include "state/field.hpp"
 #include "state/pokemon.hpp"
 
 namespace battle {
@@ -138,6 +139,7 @@ class BattleEngine {
     // Battle state
     state::Pokemon player_;
     state::Pokemon enemy_;
+    state::Field field_;
 };
 
 }  // namespace battle

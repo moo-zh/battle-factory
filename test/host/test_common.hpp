@@ -32,7 +32,9 @@
 
 #include "battle/context.hpp"
 #include "battle/effects/basic.hpp"
+#include "battle/engine.hpp"
 #include "battle/random.hpp"
+#include "battle/state/field.hpp"
 #include "battle/state/pokemon.hpp"
 
 // ============================================================================
@@ -42,6 +44,8 @@
 #include "domain/move.hpp"
 #include "domain/species.hpp"
 #include "domain/stats.hpp"
+#include "domain/status.hpp"
+#include "domain/weather.hpp"
 
 // ============================================================================
 // Convenience Namespace
