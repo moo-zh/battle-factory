@@ -5,6 +5,8 @@
 
 #include "engine.hpp"
 
+#include <cstddef>
+
 #include "context.hpp"
 #include "effects/basic.hpp"
 

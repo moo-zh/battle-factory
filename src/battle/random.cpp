@@ -9,7 +9,17 @@
 
 #include "random.hpp"
 
+// Platform-specific entropy source
+#ifdef _EZ80
 #include <sys/rtc.h>
+// TI-84 CE: Use RTC for entropy
+#define GET_ENTROPY_SEED() rtc_Time()
+#else
+#include <chrono>
+// Host: Use std::chrono for entropy
+#define GET_ENTROPY_SEED() \
+    static_cast<uint32_t>(std::chrono::system_clock::now().time_since_epoch().count())
+#endif
 
 namespace battle {
 namespace random {
@@ -42,9 +52,9 @@ static uint32_t PCG32_Next() {
 }
 
 void Initialize(uint32_t seed) {
-    // Default to RTC entropy if seed is 0
+    // Default to platform-specific entropy if seed is 0
     if (seed == 0) {
-        seed = rtc_Time();
+        seed = GET_ENTROPY_SEED();
     }
 
     // Seeding algorithm from pcg32_srandom_r()
@@ -63,7 +73,7 @@ uint16_t Random(uint16_t max) {
     // Simple modulo (could be replaced with bounded rand for perfect uniformity)
     // Bias ≈ (2^32 mod bound) / 2^32   : Random(100) = 96/4294967296 ≈ 0.0000022%
     //                                  : Random(2^N) = 0
-    // --> should be orders of magnitidue smaller than hardware measurement error
+    // --> should be orders of magnitidue smaller than EZ80 hardware measurement error
     return PCG32_Next() % max;
 }
 
