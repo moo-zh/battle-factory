@@ -434,6 +434,22 @@ inline domain::MoveData CreateSubstitute() {
     return sub;
 }
 
+/**
+ * @brief Create the Baton Pass move data
+ * Gen III: 0 power, never misses, Normal type, transfers stat stages on switch
+ */
+inline domain::MoveData CreateBatonPass() {
+    domain::MoveData bp;
+    bp.move = domain::Move::BatonPass;
+    bp.type = domain::Type::Normal;
+    bp.power = 0;
+    bp.accuracy = 0;  // Never misses (self-targeting)
+    bp.pp = 40;
+    bp.effect_chance = 0;
+    bp.priority = 0;
+    return bp;
+}
+
 // ============================================================================
 // BATTLE CONTEXT SETUP
 // ============================================================================

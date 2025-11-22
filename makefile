@@ -30,6 +30,6 @@ include $(shell cedev-config --makefile)
 # Unit test target - build test harness from test/ directory with debug flags
 # Structure: test/main.cpp, test/unit/
 utest:
-	@$(MAKE) debug NAME=UTEST SRCDIR=test/ DESCRIPTION="Test Harness" COMPRESSED=NO \
+	@$(MAKE) debug NAME=UTEST SRCDIR=test/ DESCRIPTION="Test Harness" \
 		CXXFLAGS="$(CXXFLAGS) -I$(SRCDIR)" \
 		EXTRA_CXX_SOURCES="$(wildcard $(SRCDIR)**/*.cpp)"

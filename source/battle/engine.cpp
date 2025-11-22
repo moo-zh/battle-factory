@@ -80,6 +80,9 @@ static const domain::MoveData MOVE_DATABASE[] = {
 
     // Move::Substitute
     {domain::Move::Substitute, domain::Type::Normal, 0, 0, 10, 0, 0},
+
+    // Move::BatonPass
+    {domain::Move::BatonPass, domain::Type::Normal, 0, 0, 40, 0, 0},
 };
 
 /**
@@ -114,6 +117,7 @@ static const EffectFunction EFFECT_DISPATCH[] = {
     effects::Effect_SolarBeam,            // Move::SolarBeam
     effects::Effect_Fly,                  // Move::Fly
     effects::Effect_Substitute,           // Move::Substitute
+    effects::Effect_BatonPass,            // Move::BatonPass
 };
 
 /**

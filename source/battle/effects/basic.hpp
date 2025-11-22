@@ -708,6 +708,57 @@ inline void Effect_Substitute(BattleContext& ctx) {
 }
 
 /**
+ * @brief Effect: BATON_PASS - Transfers stat stages to target (e.g., Baton Pass)
+ *
+ * This effect implements the core mechanic of Baton Pass: transferring stat stage changes
+ * from one Pokemon to another. In the full game, this occurs during a switch, but this
+ * simplified implementation focuses on the stat transfer mechanism.
+ *
+ * Mechanics:
+ * 1. Copy all 7 stat stages from attacker to defender
+ *    - ATK, DEF, SPEED, SPATK, SPDEF, ACC, EVASION
+ * 2. Defender's existing stages are overwritten (not added)
+ * 3. Always succeeds (no failure conditions)
+ *
+ * What is transferred (in full implementation):
+ * - Stat stages (all 7 stats)
+ * - Substitute (if active)
+ * - Aqua Ring, Ingrain (if active)
+ * - Confusion (volatile status)
+ * - Focus Energy (crit boost)
+ *
+ * What is NOT transferred:
+ * - Primary status (burn, paralysis, freeze, sleep, poison)
+ * - Semi-invulnerable state (Fly, Dig)
+ * - Charging state (Solar Beam)
+ *
+ * Example usage (full game):
+ * - Ninjask uses Speed Boost to get +6 Speed
+ * - Ninjask uses Baton Pass
+ * - Incoming sweeper (e.g., Blaziken) receives +6 Speed
+ * - Sweeper can now outspeed and sweep the opponent's team
+ *
+ * Simplified implementation:
+ * Since we don't have a party/switching system yet, this effect transfers stats
+ * from attacker to defender. In the full implementation, defender would be the
+ * incoming Pokemon selected by the player.
+ *
+ * Based on pokeemerald:
+ * - include/constants/battle_move_effects.h:131 (EFFECT_BATON_PASS)
+ * - data/battle_scripts_1.s:1694-1714 (BattleScript_EffectBatonPass)
+ * - Stat transfer happens in switchindataupdate command
+ */
+inline void Effect_BatonPass(BattleContext& ctx) {
+    // Transfer all stat stages from attacker to defender
+    // In full implementation, defender would be the incoming Pokemon
+    for (int i = 0; i < domain::NUM_BATTLE_STATS; i++) {
+        ctx.defender->stat_stages[i] = ctx.attacker->stat_stages[i];
+    }
+
+    ctx.move_failed = false;  // Always succeeds
+}
+
+/**
  * @brief Effect: MULTI_HIT - Multi-hit move that strikes 2-5 times (e.g., Fury Attack)
  *
  * This effect performs a damaging attack 2-5 times in a single turn. The number of hits
