@@ -63,6 +63,10 @@ inline battle::state::Pokemon CreateTestPokemon(domain::Species species, domain:
     p.is_semi_invulnerable = false;
     p.semi_invulnerable_type = battle::state::SemiInvulnerableType::None;
 
+    // Initialize substitute state
+    p.has_substitute = false;
+    p.substitute_hp = 0;
+
     return p;
 }
 
@@ -412,6 +416,22 @@ inline domain::MoveData CreateFly() {
     fly.effect_chance = 0;
     fly.priority = 0;
     return fly;
+}
+
+/**
+ * @brief Create the Substitute move data
+ * Gen III: 0 power, never misses, Normal type, creates substitute at 25% HP cost
+ */
+inline domain::MoveData CreateSubstitute() {
+    domain::MoveData sub;
+    sub.move = domain::Move::Substitute;
+    sub.type = domain::Type::Normal;
+    sub.power = 0;
+    sub.accuracy = 0;  // Never misses (self-targeting)
+    sub.pp = 10;
+    sub.effect_chance = 0;
+    sub.priority = 0;
+    return sub;
 }
 
 // ============================================================================

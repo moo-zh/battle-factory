@@ -645,6 +645,69 @@ inline void Effect_Fly(BattleContext& ctx) {
 }
 
 /**
+ * @brief Effect: SUBSTITUTE - Creates substitute at 25% HP cost (e.g., Substitute)
+ *
+ * This effect creates a decoy (substitute) that absorbs damage in place of the user.
+ * The substitute is created by sacrificing 25% of max HP (rounded down, minimum 1).
+ *
+ * Mechanics:
+ * 1. Check if user already has a substitute → if yes, fail
+ * 2. Calculate HP cost: max_hp / 4 (minimum 1 HP)
+ * 3. Check if user can afford cost (current_hp > cost) → if not, fail
+ * 4. Deduct HP cost from user
+ * 5. Set has_substitute = true
+ * 6. Set substitute_hp = cost
+ *
+ * Failure conditions:
+ * - Already has substitute (has_substitute == true)
+ * - Insufficient HP (current_hp <= cost)
+ *
+ * Once created, the substitute absorbs all incoming damage until it breaks (substitute_hp reaches
+ * 0).
+ *
+ * Example:
+ * - User with 100 HP → cost = 25 HP, user left with 75 HP, substitute has 25 HP
+ * - User with 35 HP → cost = 8 HP (35/4 rounds down), substitute has 8 HP
+ * - User with 3 HP → cost = 1 HP (minimum), substitute has 1 HP
+ * - User with 11 HP and max 45 HP → FAILS (cost is 11, need > 11)
+ *
+ * Based on pokeemerald:
+ * - include/constants/battle_move_effects.h:95 (EFFECT_SUBSTITUTE)
+ * - data/battle_scripts_1.s:1085-1109 (BattleScript_EffectSubstitute)
+ * - src/battle_script_commands.c:7808-7833 (Cmd_setsubstitute)
+ * - STATUS2_SUBSTITUTE flag (bit 24 of status2)
+ * - gDisableStructs[battler].substituteHP
+ *
+ * Note: Damage absorption by substitute is NOT implemented yet.
+ * This effect only handles substitute creation.
+ */
+inline void Effect_Substitute(BattleContext& ctx) {
+    // Check if already has substitute
+    if (ctx.attacker->has_substitute) {
+        ctx.move_failed = true;
+        return;
+    }
+
+    // Calculate HP cost (25% of max HP, minimum 1)
+    uint16_t cost = ctx.attacker->max_hp / 4;
+    if (cost == 0) {
+        cost = 1;  // Minimum cost
+    }
+
+    // Check if can afford the cost (need STRICTLY GREATER than cost)
+    if (ctx.attacker->current_hp <= cost) {
+        ctx.move_failed = true;
+        return;
+    }
+
+    // Create substitute
+    ctx.attacker->current_hp -= cost;  // Deduct HP
+    ctx.attacker->has_substitute = true;
+    ctx.attacker->substitute_hp = cost;
+    ctx.move_failed = false;  // Success
+}
+
+/**
  * @brief Effect: MULTI_HIT - Multi-hit move that strikes 2-5 times (e.g., Fury Attack)
  *
  * This effect performs a damaging attack 2-5 times in a single turn. The number of hits

@@ -36,6 +36,7 @@ enum class Move : uint8_t {
     Protect,
     SolarBeam,
     Fly,
+    Substitute,
     // TODO: Add more moves as we implement them
 };
 

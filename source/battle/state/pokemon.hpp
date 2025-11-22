@@ -74,6 +74,10 @@ struct Pokemon {
     bool is_semi_invulnerable;                    // Volatile flag: currently semi-invulnerable
     SemiInvulnerableType semi_invulnerable_type;  // Which type (OnAir, Underground, Underwater)
 
+    // Substitute state
+    bool has_substitute;     // Volatile flag: substitute is active
+    uint16_t substitute_hp;  // Substitute's current HP (0 when no substitute)
+
     // TODO: Add volatile status (status2), abilities later
 };
 
