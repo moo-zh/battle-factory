@@ -166,5 +166,11 @@ domain::MoveData CreateSubstitute();
  */
 domain::MoveData CreateBatonPass();
 
+/**
+ * @brief Create the Quick Attack move data
+ * Gen III: 40 power, 100 accuracy, Normal type, +1 priority
+ */
+domain::MoveData CreateQuickAttack();
+
 }  // namespace helpers
 }  // namespace test

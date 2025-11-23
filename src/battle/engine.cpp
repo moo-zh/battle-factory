@@ -88,6 +88,9 @@ static const domain::MoveData MOVE_DATABASE[] = {
 
     // Move::Sandstorm
     {domain::Move::Sandstorm, domain::Type::Rock, 0, 0, 10, 0, 0},
+
+    // Move::QuickAttack
+    {domain::Move::QuickAttack, domain::Type::Normal, 40, 100, 30, 0, 1},
 };
 
 /**
@@ -124,6 +127,7 @@ static const EffectFunction EFFECT_DISPATCH[] = {
     effects::Effect_Substitute,           // Move::Substitute
     effects::Effect_BatonPass,            // Move::BatonPass
     effects::Effect_Sandstorm,            // Move::Sandstorm
+    effects::Effect_Hit,                  // Move::QuickAttack
 };
 
 /**
@@ -267,10 +271,11 @@ bool BattleEngine::DetermineTurnOrder(const BattleAction& player_action,
         return true;  // Default to player first
     }
 
-    // Get move priorities (Phase 4: all moves are priority 0)
-    // Future: Add priority field to MoveData
-    int8_t player_priority = 0;
-    int8_t enemy_priority = 0;
+    // Get move priorities from move data
+    const domain::MoveData& player_move_data = GetMoveData(player_action.move);
+    const domain::MoveData& enemy_move_data = GetMoveData(enemy_action.move);
+    int8_t player_priority = player_move_data.priority;
+    int8_t enemy_priority = enemy_move_data.priority;
 
     // Compare priorities first
     if (player_priority > enemy_priority) {

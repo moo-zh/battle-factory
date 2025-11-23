@@ -278,5 +278,17 @@ domain::MoveData CreateBatonPass() {
     return bp;
 }
 
+domain::MoveData CreateQuickAttack() {
+    domain::MoveData qa;
+    qa.move = domain::Move::QuickAttack;
+    qa.type = domain::Type::Normal;
+    qa.power = 40;
+    qa.accuracy = 100;
+    qa.pp = 30;
+    qa.effect_chance = 0;
+    qa.priority = 1;  // +1 priority
+    return qa;
+}
+
 }  // namespace helpers
 }  // namespace test
