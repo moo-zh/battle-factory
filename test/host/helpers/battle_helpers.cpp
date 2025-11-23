@@ -290,5 +290,17 @@ domain::MoveData CreateQuickAttack() {
     return qa;
 }
 
+domain::MoveData CreateLeechSeed() {
+    domain::MoveData ls;
+    ls.move = domain::Move::LeechSeed;
+    ls.type = domain::Type::Grass;
+    ls.power = 0;  // Status move, no direct damage
+    ls.accuracy = 90;
+    ls.pp = 10;
+    ls.effect_chance = 0;
+    ls.priority = 0;
+    return ls;
+}
+
 }  // namespace helpers
 }  // namespace test

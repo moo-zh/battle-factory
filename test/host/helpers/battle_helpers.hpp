@@ -172,5 +172,11 @@ domain::MoveData CreateBatonPass();
  */
 domain::MoveData CreateQuickAttack();
 
+/**
+ * @brief Create the Leech Seed move data
+ * Gen III: 0 power, 90 accuracy, Grass type, drains 1/8 HP per turn
+ */
+domain::MoveData CreateLeechSeed();
+
 }  // namespace helpers
 }  // namespace test

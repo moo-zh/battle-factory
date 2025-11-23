@@ -133,6 +133,7 @@ static const EffectFunction EFFECT_DISPATCH[] = {
     effects::Effect_Sandstorm,            // Move::Sandstorm
     effects::Effect_Hit,                  // Move::QuickAttack
     effects::Effect_StealthRock,          // Move::StealthRock
+    effects::Effect_LeechSeed,            // Move::LeechSeed
 };
 
 /**
@@ -479,7 +480,69 @@ void BattleEngine::EndOfTurn() {
 
     // TODO: Add poison damage (1/8 max HP)
     // TODO: Add toxic damage (increasing: turn/16 * max HP)
-    // TODO: Add Leech Seed drain
+
+    // Leech Seed drain (1/8 max HP, heals seeder)
+    // Process player
+    if (player_.is_seeded && player_.seeded_by != nullptr && !player_.seeded_by->is_fainted &&
+        !player_.is_fainted) {
+        // Calculate drain amount: 1/8 of seeded Pokemon's max HP (minimum 1)
+        uint16_t drain_amount = player_.max_hp / 8;
+        if (drain_amount == 0) {
+            drain_amount = 1;
+        }
+
+        // Clamp drain to not exceed current HP
+        if (drain_amount > player_.current_hp) {
+            drain_amount = player_.current_hp;
+        }
+
+        // Damage seeded Pokemon
+        player_.current_hp -= drain_amount;
+        if (player_.current_hp == 0) {
+            player_.is_fainted = true;
+        }
+
+        // Heal seeder by the same amount (capped at max HP)
+        if (player_.seeded_by->current_hp + drain_amount > player_.seeded_by->max_hp) {
+            player_.seeded_by->current_hp = player_.seeded_by->max_hp;
+        } else {
+            player_.seeded_by->current_hp += drain_amount;
+        }
+
+        // TODO: Display message: "[Player] was seeded by Leech Seed!"
+        // TODO: Display message: "[Seeder]'s health was restored!" (or animation)
+    }
+
+    // Process enemy
+    if (enemy_.is_seeded && enemy_.seeded_by != nullptr && !enemy_.seeded_by->is_fainted &&
+        !enemy_.is_fainted) {
+        // Calculate drain amount: 1/8 of seeded Pokemon's max HP (minimum 1)
+        uint16_t drain_amount = enemy_.max_hp / 8;
+        if (drain_amount == 0) {
+            drain_amount = 1;
+        }
+
+        // Clamp drain to not exceed current HP
+        if (drain_amount > enemy_.current_hp) {
+            drain_amount = enemy_.current_hp;
+        }
+
+        // Damage seeded Pokemon
+        enemy_.current_hp -= drain_amount;
+        if (enemy_.current_hp == 0) {
+            enemy_.is_fainted = true;
+        }
+
+        // Heal seeder by the same amount (capped at max HP)
+        if (enemy_.seeded_by->current_hp + drain_amount > enemy_.seeded_by->max_hp) {
+            enemy_.seeded_by->current_hp = enemy_.seeded_by->max_hp;
+        } else {
+            enemy_.seeded_by->current_hp += drain_amount;
+        }
+
+        // TODO: Display message: "[Enemy] was seeded by Leech Seed!"
+        // TODO: Display message: "[Seeder]'s health was restored!" (or animation)
+    }
 
     // Weather damage (Sandstorm, Hail: 1/16 max HP)
     // Only applies if weather is active

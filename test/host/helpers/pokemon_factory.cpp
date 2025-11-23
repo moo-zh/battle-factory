@@ -48,6 +48,10 @@ battle::state::Pokemon CreateTestPokemon(domain::Species species, domain::Type t
     p.has_substitute = false;
     p.substitute_hp = 0;
 
+    // Initialize Leech Seed state
+    p.is_seeded = false;
+    p.seeded_by = nullptr;
+
     return p;
 }
 

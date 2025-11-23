@@ -936,5 +936,64 @@ inline void Effect_StealthRock(BattleContext& ctx) {
     }
 }
 
+/**
+ * @brief Effect: LEECH_SEED - Seeds the target to drain HP each turn
+ *
+ * Leech Seed plants a seed on the target that drains 1/8 of its max HP per turn
+ * and transfers it to the user. This is a **volatile status** that persists until
+ * the seeded Pokemon switches out.
+ *
+ * Key mechanics:
+ * - Accuracy check required (90% in Gen III)
+ * - Fails if target is already seeded
+ * - Fails if target is Grass type (immune)
+ * - Sets is_seeded flag and stores pointer to seeder
+ * - HP drain occurs at end of turn (after status damage, weather damage)
+ * - Drain amount: 1/8 of seeded Pokemon's max HP (minimum 1)
+ * - Drained HP heals the seeder by the same amount
+ * - Cleared on switch-out (but Baton Pass-able - not implemented)
+ *
+ * Special interactions:
+ * - Liquid Ooze ability: Reverses the heal into damage (not implemented)
+ * - Substitute: Fails against Substitute (not implemented)
+ * - Magic Guard: Prevents the drain damage (not implemented)
+ *
+ * Domain: SlotState (L) - cleared on switch, but Baton Pass-able
+ *
+ * Example move:
+ * - Leech Seed (0 power, 90 accuracy, Grass type, 10 PP) - pokeemerald Move 73
+ *
+ * Based on pokeemerald:
+ * - data/battle_scripts_1.s:BattleScript_EffectLeechSeed
+ * - src/battle_script_commands.c:Cmd_setseeded
+ * - src/battle_util.c:ENDTURN_LEECH_SEED (turn drain logic)
+ */
+inline void Effect_LeechSeed(BattleContext& ctx) {
+    // Check accuracy
+    commands::AccuracyCheck(ctx);
+    if (ctx.move_failed) {
+        return;
+    }
+
+    // Fail if target is already seeded
+    if (ctx.defender->is_seeded) {
+        ctx.move_failed = true;
+        // TODO: Display message: "[Defender] is already seeded!"
+        return;
+    }
+
+    // Fail if target is Grass type (immune)
+    if (ctx.defender->type1 == domain::Type::Grass || ctx.defender->type2 == domain::Type::Grass) {
+        ctx.move_failed = true;
+        // TODO: Display message: "It doesn't affect [Defender]..."
+        return;
+    }
+
+    // Apply Leech Seed
+    ctx.defender->is_seeded = true;
+    ctx.defender->seeded_by = ctx.attacker;
+    // TODO: Display message: "[Defender] was seeded!"
+}
+
 }  // namespace effects
 }  // namespace battle

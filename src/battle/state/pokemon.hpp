@@ -80,6 +80,10 @@ struct Pokemon {
     bool has_substitute;     // Volatile flag: substitute is active
     uint16_t substitute_hp;  // Substitute's current HP (0 when no substitute)
 
+    // Leech Seed state
+    bool is_seeded;      // Volatile flag: this Pokemon is seeded by Leech Seed
+    Pokemon* seeded_by;  // Pointer to the Pokemon that seeded this one (receives drained HP)
+
     // TODO: Add volatile status (status2) later
 };
 
