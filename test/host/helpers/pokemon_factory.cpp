@@ -60,6 +60,16 @@ battle::state::Pokemon CreateCharmander() {
                              65);  // Speed
 }
 
+battle::state::Pokemon CreateCharizard() {
+    return CreateTestPokemon(domain::Species::Charizard, domain::Type::Fire, domain::Type::Flying,
+                             78,    // HP
+                             84,    // Attack
+                             78,    // Defense
+                             109,   // Sp. Attack
+                             85,    // Sp. Defense
+                             100);  // Speed
+}
+
 battle::state::Pokemon CreateBulbasaur() {
     return CreateTestPokemon(domain::Species::Bulbasaur, domain::Type::Grass, domain::Type::Poison,
                              45,   // HP

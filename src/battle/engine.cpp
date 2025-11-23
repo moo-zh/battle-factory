@@ -91,6 +91,9 @@ static const domain::MoveData MOVE_DATABASE[] = {
 
     // Move::QuickAttack
     {domain::Move::QuickAttack, domain::Type::Normal, 40, 100, 30, 0, 1},
+
+    // Move::StealthRock
+    {domain::Move::StealthRock, domain::Type::Rock, 0, 0, 20, 0, 0},
 };
 
 /**
@@ -128,6 +131,7 @@ static const EffectFunction EFFECT_DISPATCH[] = {
     effects::Effect_BatonPass,            // Move::BatonPass
     effects::Effect_Sandstorm,            // Move::Sandstorm
     effects::Effect_Hit,                  // Move::QuickAttack
+    effects::Effect_StealthRock,          // Move::StealthRock
 };
 
 /**
@@ -184,6 +188,10 @@ void BattleEngine::InitBattle(const state::Pokemon& player_pokemon,
     // Initialize field state (clear weather)
     field_.weather = domain::Weather::None;
     field_.weather_duration = 0;
+
+    // Initialize side state (clear hazards)
+    player_side_.stealth_rock = false;
+    enemy_side_.stealth_rock = false;
 }
 
 /**
@@ -365,6 +373,15 @@ void BattleEngine::ExecuteMove(state::Pokemon& attacker, state::Pokemon& defende
     ctx.attacker = &attacker;
     ctx.defender = &defender;
     ctx.field = &field_;
+
+    // Determine which side is which (attacker's side vs defender's side)
+    if (&attacker == &player_) {
+        ctx.attacker_side = &player_side_;
+        ctx.defender_side = &enemy_side_;
+    } else {
+        ctx.attacker_side = &enemy_side_;
+        ctx.defender_side = &player_side_;
+    }
 
     // Get move data from database (Phase 3: table lookup)
     const domain::MoveData& move_data = GetMoveData(move);

@@ -40,6 +40,7 @@ enum class Move : uint8_t {
     BatonPass,
     Sandstorm,
     QuickAttack,
+    StealthRock,
     // TODO: Add more moves as we implement them
 };
 

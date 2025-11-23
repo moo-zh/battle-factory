@@ -895,5 +895,46 @@ inline void Effect_Sandstorm(BattleContext& ctx) {
     // TODO: Display message: "A sandstorm kicked up!"
 }
 
+/**
+ * @brief Stealth Rock - Sets up entry hazard on opponent's side
+ *
+ * BEHAVIOR:
+ * - Sets stealth_rock flag on defender's side (entry hazard)
+ * - When a Pokemon switches in, takes damage based on type effectiveness vs Rock
+ * - Damage = (max HP / 8) * type effectiveness
+ * - Type effectiveness: 4x=50%, 2x=25%, 1x=12.5%, 0.5x=6.25%, 0.25x=3.125%
+ * - Persists until battle ends (no way to remove in Gen III except Rapid Spin)
+ * - Does not stack (setting again has no effect)
+ *
+ * MOVE PROPERTIES:
+ * - Type: Rock
+ * - Power: 0 (status move)
+ * - Accuracy: Never misses (status move)
+ * - PP: 20
+ * - Priority: 0 (normal)
+ * - Target: Opponent's side
+ *
+ * USAGE NOTES:
+ * - Affects all Pokemon that switch in on the target side
+ * - Flying types and Pokemon with Levitate still take damage (not affected by immunities)
+ * - Damage is applied BEFORE any other switch-in effects (abilities, etc.)
+ *
+ * Based on pokeemerald:
+ * - data/battle_scripts_1.s:BattleScript_EffectStealthRock
+ * - src/battle_util.c:SetSideStatusBit (hazard application)
+ * - src/battle_util.c:VARIOUS_TRY_ACTIVATE_STEALTH_ROCKS (switch-in damage)
+ */
+inline void Effect_StealthRock(BattleContext& ctx) {
+    // Set stealth rock on defender's side
+    if (!ctx.defender_side->stealth_rock) {
+        ctx.defender_side->stealth_rock = true;
+        // TODO: Display message: "Pointed stones float in the air around [side]!"
+    } else {
+        // Already set - move fails
+        ctx.move_failed = true;
+        // TODO: Display message: "But it failed!"
+    }
+}
+
 }  // namespace effects
 }  // namespace battle

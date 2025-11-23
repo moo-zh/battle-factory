@@ -46,6 +46,16 @@ battle::state::Pokemon CreateTestPokemon(domain::Species species, domain::Type t
 battle::state::Pokemon CreateCharmander();
 
 /**
+ * @brief Create Charizard with Gen III base stats
+ *
+ * Base stats: 78 HP, 84 Atk, 78 Def, 109 SpA, 85 SpD, 100 Spe
+ * Type: Fire/Flying (4x weak to Rock - useful for Stealth Rock testing)
+ *
+ * @return Charizard at full HP with neutral stat stages
+ */
+battle::state::Pokemon CreateCharizard();
+
+/**
  * @brief Create Bulbasaur with Gen III base stats
  *
  * Base stats: 45 HP, 49 Atk, 49 Def, 65 SpA, 65 SpD, 45 Spe

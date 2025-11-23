@@ -45,6 +45,7 @@ enum class Type : uint8_t {
 enum class Species : uint8_t {
     None = 0,
     Charmander,
+    Charizard,
     Bulbasaur,
     Pikachu,
     Pidgey,

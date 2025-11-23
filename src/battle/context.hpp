@@ -13,6 +13,7 @@
 #include "../domain/move.hpp"
 #include "state/field.hpp"
 #include "state/pokemon.hpp"
+#include "state/side.hpp"
 
 namespace battle {
 
@@ -27,6 +28,8 @@ struct BattleContext {
     state::Pokemon* attacker;
     state::Pokemon* defender;
     state::Field* field;
+    state::Side* attacker_side;  // Side of the attacker
+    state::Side* defender_side;  // Side of the defender
     const domain::MoveData* move;
 
     // === EXECUTION STATE (modified by commands) ===

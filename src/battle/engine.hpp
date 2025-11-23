@@ -22,6 +22,7 @@
 #include "../domain/move.hpp"
 #include "state/field.hpp"
 #include "state/pokemon.hpp"
+#include "state/side.hpp"
 
 namespace battle {
 
@@ -140,6 +141,8 @@ class BattleEngine {
     state::Pokemon player_;
     state::Pokemon enemy_;
     state::Field field_;
+    state::Side player_side_;
+    state::Side enemy_side_;
 };
 
 }  // namespace battle
