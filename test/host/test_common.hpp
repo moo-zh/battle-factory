@@ -41,6 +41,7 @@
 // Domain Types (commonly referenced)
 // ============================================================================
 
+#include "domain/ability.hpp"
 #include "domain/move.hpp"
 #include "domain/species.hpp"
 #include "domain/stats.hpp"

@@ -7,6 +7,7 @@
 
 #include <cstddef>
 
+#include "commands/abilities.hpp"
 #include "context.hpp"
 #include "effects/basic.hpp"
 
@@ -192,6 +193,33 @@ void BattleEngine::InitBattle(const state::Pokemon& player_pokemon,
     // Initialize side state (clear hazards)
     player_side_.stealth_rock = false;
     enemy_side_.stealth_rock = false;
+
+    // Trigger switch-in abilities for both Pokemon
+    // Player switches in first (affects enemy)
+    {
+        BattleContext ctx;
+        ctx.attacker = &player_;
+        ctx.defender = &enemy_;
+        ctx.field = &field_;
+        ctx.attacker_side = &player_side_;
+        ctx.defender_side = &enemy_side_;
+        ctx.move = nullptr;
+        ctx.move_failed = false;
+        commands::TriggerSwitchInAbilities(ctx);
+    }
+
+    // Enemy switches in second (affects player)
+    {
+        BattleContext ctx;
+        ctx.attacker = &enemy_;
+        ctx.defender = &player_;
+        ctx.field = &field_;
+        ctx.attacker_side = &enemy_side_;
+        ctx.defender_side = &player_side_;
+        ctx.move = nullptr;
+        ctx.move_failed = false;
+        commands::TriggerSwitchInAbilities(ctx);
+    }
 }
 
 /**

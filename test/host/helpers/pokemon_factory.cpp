@@ -13,6 +13,7 @@ battle::state::Pokemon CreateTestPokemon(domain::Species species, domain::Type t
                                          uint8_t spa, uint8_t spd, uint8_t spe) {
     battle::state::Pokemon p;
     p.species = species;
+    p.ability = domain::Ability::None;  // Default: no ability
     p.type1 = type1;
     p.type2 = type2;
     p.level = 5;

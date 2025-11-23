@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include "../../domain/ability.hpp"
 #include "../../domain/move.hpp"
 #include "../../domain/species.hpp"
 #include "../../domain/stats.hpp"
@@ -38,6 +39,7 @@ enum class SemiInvulnerableType : uint8_t {
  */
 struct Pokemon {
     domain::Species species;
+    domain::Ability ability;
     domain::Type type1;
     domain::Type type2;
     uint8_t level;
@@ -78,7 +80,7 @@ struct Pokemon {
     bool has_substitute;     // Volatile flag: substitute is active
     uint16_t substitute_hp;  // Substitute's current HP (0 when no substitute)
 
-    // TODO: Add volatile status (status2), abilities later
+    // TODO: Add volatile status (status2) later
 };
 
 }  // namespace state
